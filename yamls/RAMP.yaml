@@ -1,0 +1,505 @@
+openapi: 3.0.0
+
+info:
+  description: Safle Ramp API
+  version: "1.0.0"
+  title: Ramp Service
+  
+# servers:
+#   - description: Development Service
+#     url: https://dev-ramp.getsafle.com
+#   - description: Test Service
+#     url: https://test-ramp.getsafle.com
+#   - description: Staging Service
+#     url: https://stage-ramp.getsafle.com
+#   - description: Production Service
+#     url: https://b-ramp.getsafle.com
+    
+
+paths:
+  /ramp/orders:
+    get:
+      summary: GET Ramp Orders
+      operationId: getRampOrder
+      description: Fetch details of Ramp Orders
+      tags: 
+        - Ramp
+      servers:
+        - description: Development Service
+          url: https://dev-ramp.getsafle.com
+        - description: Test Service
+          url: https://test-ramp.getsafle.com
+        - description: Staging Service
+          url: https://stage-ramp.getsafle.com
+        - description: Production Service
+          url: https://b-ramp.getsafle.com  
+      security: 
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Fetched Ramp transaction successfully.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RampTransactionResponse'
+        '400':
+          description: Field validation error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FieldValidationError'
+        '401':
+          description: Unauthorized Access.
+              
+    post:
+      summary: Save Ramp Orders
+      operationId: postRampOrder
+      description: Save Ramp Orders
+      tags: 
+        - Ramp
+      servers:
+        - description: Development Service
+          url: https://dev-ramp.getsafle.com
+        - description: Test Service
+          url: https://test-ramp.getsafle.com
+        - description: Staging Service
+          url: https://stage-ramp.getsafle.com
+        - description: Production Service
+          url: https://b-ramp.getsafle.com  
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SaveRampTransactionRequest'
+        description: Ramp Transaction to add.
+      responses:
+        '201':
+          description: User Transak orders added successfully.
+          content: 
+            application/json:
+              schema:
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    example: 201
+                  message:
+                    type: string
+                    example: "User Transak orders added successfully."
+        '400':
+          description: Field validation errors.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FieldValidationError'
+        '401':
+          description: Unauthorized Access.
+        
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    RampTransactionResponse:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          example: 200
+        doc:
+          type: object
+          properties:
+            data:
+              type: array
+              items:
+                $ref: '#/components/schemas/TransactionDetail'
+    TransactionDetail:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique ID for the transaction.
+          example: "d1444354-6f12-4439-894c-65d94fc703d5"
+        walletAddress:
+          type: string
+          description: Wallet address involved in the transaction.
+          example: "0xecb3071AF931d88953B15f2C30e7eFbb4e708f21"
+        createdAt:
+          type: string
+          format: date-time
+          description: Timestamp of when the transaction was created.
+          example: "2020-07-03T06:06:25.655Z"
+        status:
+          type: string
+          description: The current status of the transaction.
+          example: "PENDING_DELIVERY_FROM_TRANSAK"
+        fiatCurrency:
+          type: string
+          description: The fiat currency used in the transaction.
+          example: "INR"
+        cryptocurrency:
+          type: string
+          description: The cryptocurrency involved in the transaction.
+          example: "ETH"
+        isBuyOrSell:
+          type: string
+          description: Specifies whether the transaction is a buy or sell.
+          example: "BUY"
+        fiatAmount:
+          type: number
+          description: The amount of fiat currency in the transaction.
+          example: 49996
+        amountPaid:
+          type: number
+          description: The amount of fiat currency paid.
+          example: 49996
+        paymentOptionId:
+          type: string
+          description: The payment option used.
+          example: "neft_bank_transfer"
+        walletLink:
+          type: string
+          description: The link to the wallet address on the block explorer.
+          example: "https://rinkeby.etherscan.io/address/0xecb3071AF931d88953B15f2C30e7eFbb4e708f21"
+        quoteId:
+          type: string
+          nullable: true
+          description: The quote ID for the transaction.
+          example: ""
+        orderProcessingType:
+          type: string
+          nullable: true
+          description: The order processing type.
+          example: ""
+        addressAdditionalData:
+          type: boolean
+          description: Indicates if additional address data is present.
+          example: false
+        network:
+          type: string
+          description: The network used for the transaction.
+          example: "erc20"
+        appVersionName:
+          type: string
+          description: The version of the app used for the transaction.
+          example: ""
+        conversionPrice:
+          type: number
+          format: float
+          description: The conversion price of cryptocurrency.
+          example: 0.00005696836313231339
+        cryptoAmount:
+          type: number
+          format: float
+          description: The amount of cryptocurrency in the transaction.
+          example: 2.84619012
+        totalFeeInFiat:
+          type: number
+          format: float
+          description: The total fee for the transaction in fiat currency.
+          example: 35.11
+        fiatAmountInUsd:
+          type: number
+          description: The fiat amount in USD.
+          example: 250
+        referenceCode:
+          type: integer
+          description: The reference code for the transaction.
+          example: 251558
+        paymentOptions:
+          type: array
+          items:
+            type: object
+            properties:
+              currency:
+                type: string
+                example: "INR"
+              id:
+                type: string
+                example: "upi"
+              name:
+                type: string
+                example: "UPI"
+              fields:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                      example: "UPI / VPA Id"
+                    value:
+                      type: string
+                      example: "1234567890@paytm"
+          example:
+            - currency: "INR"
+              id: "upi"
+              name: "UPI"
+              fields:
+                - name: "UPI / VPA Id"
+                  value: "1234567890@paytm"
+            - currency: "INR"
+              id: "bankaccount"
+              name: "Bank Transfer"
+              fields:
+                - name: "Name"
+                  value: "Demo Account"
+                - name: "Account Number"
+                  value: "1234567890"
+                - name: "IFSC Code"
+                  value: "PYTM0123456"
+                - name: "Account Type"
+                  value: "Savings"
+        autoExpiresAt:
+          type: string
+          format: date-time
+          description: The auto expiration time for the transaction.
+          example: "2020-07-03T06:36:25+00:00"
+        fromWalletAddress:
+          type: string
+          description: The wallet address sending the cryptocurrency.
+          example: ""
+        partnerCustomerId:
+          type: string
+          description: The customer ID of the partner.
+          example: ""
+        statusHistories:
+          type: array
+          items:
+            type: object
+          description: History of status changes for the transaction.
+        lockedPriceId:
+          type: string
+          description: The locked price ID for the transaction.
+          example: ""
+        isFirstOrder:
+          type: boolean
+          description: Indicates if this is the first order for the user.
+          example: false
+        updatedAt:
+          type: string
+          description: The last time the transaction was updated.
+          example: ""
+        exchangeId:
+          type: string
+          description: The ID of the exchange involved.
+          example: ""
+        internalOrderStatus:
+          type: string
+          description: The internal order status.
+          example: ""
+        completedAt:
+          type: string
+          description: The timestamp when the transaction was completed.
+          example: ""
+        transactionHash:
+          type: string
+          description: The hash of the transaction.
+          example: ""
+        transactionLink:
+          type: string
+          description: The link to view the transaction on the block explorer.
+          example: ""
+          
+    FieldValidationError:
+      type: object
+      properties:
+        statusCode: 
+          type: integer
+          example: 400
+        type:
+          type: string
+          example: "field-validation"
+        details:
+          type: array
+          items:
+            $ref: '#/components/schemas/ErrorDetails'
+    
+    ErrorDetails:
+      type: object
+      properties:
+        name:
+          type: string
+          example: field validation error name
+        message:
+          type: string
+          example: field validation error message  
+          
+    SaveRampTransactionRequest:
+      type: object
+      required:
+        - id
+        - walletAddress
+        - createdAt
+        - status
+        - fiatCurrency
+        - cryptocurrency
+        - isBuyOrSell
+        - fiatAmount
+        - amountPaid
+        - paymentOptionId
+        - walletLink
+        - network
+        - cryptoAmount
+        - totalFeeInFiat
+        - fiatAmountInUsd
+        - referenceCode
+        - paymentOptions
+        - autoExpiresAt
+      properties:
+        id:
+          type: string
+          example: "d1444354-6f12-4439-894c-65d94fc703d5"
+        walletAddress:
+          type: string
+          example: "0xecb3071AF931d88953B15f2C30e7eFbb4e708f21"
+        createdAt:
+          type: string
+          format: date-time
+          example: "2020-07-03T06:06:25.655Z"
+        status:
+          type: string
+          example: "PENDING_DELIVERY_FROM_TRANSAK"
+        fiatCurrency:
+          type: string
+          example: "INR"
+        cryptocurrency:
+          type: string
+          example: "ETH"
+        isBuyOrSell:
+          type: string
+          example: "BUY"
+        fiatAmount:
+          type: number
+          example: 49996
+        amountPaid:
+          type: number
+          example: 49996
+        paymentOptionId:
+          type: string
+          example: "neft_bank_transfer"
+        walletLink:
+          type: string
+          example: "https://rinkeby.etherscan.io/address/0xecb3071AF931d88953B15f2C30e7eFbb4e708f21"
+        quoteId:
+          type: string
+          nullable: true
+        orderProcessingType:
+          type: string
+          nullable: true
+        addressAdditionalData:
+          type: boolean
+          example: false
+        network:
+          type: string
+          example: "erc20"
+        appVersionName:
+          type: string
+          example: ""
+        conversionPrice:
+          type: number
+          format: float
+          example: 0.00005696836313231339
+        cryptoAmount:
+          type: number
+          format: float
+          example: 2.84619012
+        totalFeeInFiat:
+          type: number
+          format: float
+          example: 35.11
+        fiatAmountInUsd:
+          type: number
+          example: 250
+        referenceCode:
+          type: integer
+          example: 251558
+        paymentOptions:
+          type: array
+          items:
+            type: object
+            properties:
+              currency:
+                type: string
+                example: "INR"
+              id:
+                type: string
+                example: "upi"
+              name:
+                type: string
+                example: "UPI"
+              fields:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                      example: "UPI / VPA Id"
+                    value:
+                      type: string
+                      example: "1234567890@paytm"
+          example:
+            - currency: "INR"
+              id: "upi"
+              name: "UPI"
+              fields:
+                - name: "UPI / VPA Id"
+                  value: "1234567890@paytm"
+            - currency: "INR"
+              id: "bankaccount"
+              name: "Bank Transfer"
+              fields:
+                - name: "Name"
+                  value: "Demo Account"
+                - name: "Account Number"
+                  value: "1234567890"
+                - name: "IFSC Code"
+                  value: "PYTM0123456"
+                - name: "Account Type"
+                  value: "Savings"
+        autoExpiresAt:
+          type: string
+          format: date-time
+          example: "2020-07-03T06:36:25+00:00"
+        fromWalletAddress:
+          type: string
+          example: ""
+        partnerCustomerId:
+          type: string
+          example: ""
+        statusHistories:
+          type: array
+          items:
+            type: object
+        lockedPriceId:
+          type: string
+          example: ""
+        isFirstOrder:
+          type: boolean
+          example: false
+        updatedAt:
+          type: string
+          example: ""
+        exchangeId:
+          type: string
+          example: ""
+        internalOrderStatus:
+          type: string
+          example: ""
+        completedAt:
+          type: string
+          example: ""
+        transactionHash:
+          type: string
+          example: ""
+        transactionLink:
+          type: string
+          example: ""

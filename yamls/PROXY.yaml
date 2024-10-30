@@ -1,0 +1,193 @@
+openapi: 3.0.0
+
+info:
+  title: Proxy Service
+  description: API for proxying GET and POST requests with optional headers and token support.
+  version: 1.0.0
+  
+# servers:
+#   - url: https://dev-proxy.getsafle.com
+#     description: Development Server
+#   - url: https://test-proxy.getsafle.com
+#     description: Testing Server
+#   - url: https://stage-proxy.getsafle.com
+#     description: Staging Server
+#   - url: https://b-proxy.getsafle.com
+#     description: Production Server
+
+paths:
+  /:
+    get:
+      summary: Call GET endpoint through proxy
+      tags:
+        - Proxy
+      servers:
+        - url: https://dev-proxy.getsafle.com
+          description: Development Server
+        - url: https://test-proxy.getsafle.com
+          description: Testing Server
+        - url: https://stage-proxy.getsafle.com
+          description: Staging Server
+        - url: https://b-proxy.getsafle.com
+          description: Production Server
+      parameters:
+        - name: url
+          in: query
+          description: URL to proxy the request to.
+          required: true
+          schema:
+            type: string
+        - name: token
+          in: query
+          description: Token for authentication.
+          required: true
+          schema:
+            type: string
+        - name: tokenType
+          in: query
+          description: Type of token for authentication.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '400':
+          description: Field validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FieldValidationError'
+    post:
+      summary: Call POST endpoint through proxy
+      tags:
+        - Proxy
+      servers:
+        - url: https://dev-proxy.getsafle.com
+          description: Development Server
+        - url: https://test-proxy.getsafle.com
+          description: Testing Server
+        - url: https://stage-proxy.getsafle.com
+          description: Staging Server
+        - url: https://b-proxy.getsafle.com
+          description: Production Server  
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostRequest'
+      responses:
+        '201':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/201SuccessResponse'
+        '400':
+          description: Field validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FieldValidationError'
+                
+  /get:
+    post:
+      summary: Call GET endpoint through proxy with custom headers
+      tags:
+        - Proxy
+      servers:
+        - url: https://dev-proxy.getsafle.com
+          description: Development Server
+        - url: https://test-proxy.getsafle.com
+          description: Testing Server
+        - url: https://stage-proxy.getsafle.com
+          description: Staging Server
+        - url: https://b-proxy.getsafle.com
+          description: Production Server  
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GetWithHeadersRequest'
+      responses:
+        '201':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/201SuccessResponse'
+        '400':
+          description: Field validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FieldValidationError'              
+components:
+  schemas:
+    SuccessResponse:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          example: 200
+        data:
+          type: object
+          description: Optional response data object.
+          
+    PostRequest:
+      type: object
+      properties:
+        url:
+          type: string
+        data:
+          type: string
+        token:
+          type: string
+        tokenType:
+          type: string
+      
+          
+    201SuccessResponse:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          example: 201
+        message:
+          example: " "
+
+    GetWithHeadersRequest:
+      type: object
+      properties:
+        url:
+          type: string
+          example: " "
+        headers:
+          type: object
+
+    FieldValidationError:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          example: 400
+        type:
+          type: string
+          example: field-validation
+        details:
+          type: array
+          items:
+            type: object
+            properties:
+              message:
+                type: string
+                example: field validation error message
+              name:
+                type: string
+                example: field validation error name

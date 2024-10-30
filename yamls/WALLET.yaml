@@ -1,0 +1,676 @@
+openapi: 3.0.0
+
+info:
+  description: Safle Wallet API (Safle-Dev)
+  version: "1.0.0"
+  title: Safle Wallet
+
+# servers:
+#   - description: Development Server
+#     url: https://dev-wallet.getsafle.com
+#   - description: Test Server
+#     url: https://test-wallet.getsafle.com
+#   - description: Staging Server
+#     url: https://stage-wallet.getsafle.com
+#   - description: Production Server
+#     url: https://b-wallet.getsafle.com
+
+paths:
+  /wallet/user-token:
+    get:
+      summary: Get user token
+      operationId: getUserToken
+      description: Retrieve the list of user tokens
+      tags:
+        - Wallet
+      servers:
+        - description: Development Server
+          url: https://dev-wallet.getsafle.com
+        - description: Test Server
+          url: https://test-wallet.getsafle.com
+        - description: Staging Server
+          url: https://stage-wallet.getsafle.com
+        - description: Production Server
+          url: https://b-wallet.getsafle.com  
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          description: User tokens retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/getUserToken'
+        '400':
+          description: Field validation error.
+          content: 
+            applicatio/json:
+              examples:
+                fieldValidation:
+                  summary: "Field Validation"
+                  value:
+                    statusCode: 400
+                    type: "field-validation"
+                    details:
+                      name: "field validation error name"
+                      message: "field validation error message"
+                tokenAlreadyAdded:
+                  summary: "Token already added"
+                  value:
+                    statusCode: 400
+                    type: "field-validation"
+                    details:
+                      name: "addToken"
+                      message: "Token already added."
+    post:
+      summary: Save user token
+      operationId: saveUserToken
+      description: Save user token to the wallet
+      tags:
+        - Wallet
+      servers:
+        - description: Development Server
+          url: https://dev-wallet.getsafle.com
+        - description: Test Server
+          url: https://test-wallet.getsafle.com
+        - description: Staging Server
+          url: https://stage-wallet.getsafle.com
+        - description: Production Server
+          url: https://b-wallet.getsafle.com  
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/saveWalletrequest'
+      responses:
+        '201':
+          description: Token added successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/saveWalletResponse'
+        '400':
+          description: Field validation error or token already added
+          content:
+            application/json:
+              examples:
+                fieldValidation:
+                  summary: "Field Validation"
+                  value:
+                    statusCode: 400
+                    type: "field-validation"
+                    details:
+                      name: "field validation error name"
+                      message: "field validation error message"
+                tokenAlreadyAdded:
+                  summary: "Token already added"
+                  value:
+                    statusCode: 400
+                    type: "field-validation"
+                    details:
+                      name: "addToken"
+                      message: "Token already added."
+                
+  /wallet/user-favourite:
+    get:
+      summary: Get user favourite token
+      operationId: getUserFavouriteTokens
+      description: Retrieve the list of user's favourite tokens
+      tags:
+        - Wallet
+      servers:
+        - description: Development Server
+          url: https://dev-wallet.getsafle.com
+        - description: Test Server
+          url: https://test-wallet.getsafle.com
+        - description: Staging Server
+          url: https://stage-wallet.getsafle.com
+        - description: Production Server
+          url: https://b-wallet.getsafle.com  
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: User's favourite tokens retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/getFavouriteResponse'
+        '400':
+          description: Field validation error or no favourite tokens found
+          content:
+            application/json:
+              examples:
+                fieldValidation:
+                  summary: "Field Validation"
+                  value:
+                    statusCode: 400
+                    type: "field-validation"
+                    details:
+                      name: "field validation error name"
+                      message: "field validation error message"
+                NoFavouriteTokensFound:
+                  summary: "No favourite tokens found"
+                  value:
+                    statusCode: 400
+                    type: "field-validation"
+                    details:
+                      name: "user"
+                      message: "No details found."
+      
+    post:
+      summary: Save user favourite token
+      operationId: saveUserFavouriteToken
+      description: Save user's favourite token to the wallet
+      tags:
+        - Wallet
+      servers:
+        - description: Development Server
+          url: https://dev-wallet.getsafle.com
+        - description: Test Server
+          url: https://test-wallet.getsafle.com
+        - description: Staging Server
+          url: https://stage-wallet.getsafle.com
+        - description: Production Server
+          url: https://b-wallet.getsafle.com  
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/postFavouriteRequest'
+      responses:
+        '201':
+          description: Favourite successfully added
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  statusCode:
+                    type: integer
+                    example: 201
+                  message:
+                    type: string
+                    example: Favourite successfully added
+        '400':
+          description: Field validation error or token already added
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/fieldValidationError'
+    delete:
+      summary: Remove a token from user's favourite list
+      description: Delete a token from the user's favourites by specifying the token symbol
+      operationId: deleteUserFavouriteToken
+      tags:
+        - Wallet
+      servers:
+        - description: Development Server
+          url: https://dev-wallet.getsafle.com
+        - description: Test Server
+          url: https://test-wallet.getsafle.com
+        - description: Staging Server
+          url: https://stage-wallet.getsafle.com
+        - description: Production Server
+          url: https://b-wallet.getsafle.com  
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                symbol:
+                  type: string
+                  example: "usdt"
+      responses:
+        '200':
+          description: Token successfully deleted from favourites
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/deleteFavouriteResponse'
+              
+        '400':
+          description: Field validation error or token already deleted or asset not found
+          content:
+            application/json:
+              examples:
+                fieldValidation:
+                  summary: "Field Validation"
+                  value:
+                    statusCode: 400
+                    type: "field-validation"
+                    details:
+                      name: "field validation error name"
+                      message: "field validation error message"
+                tokenAlreadyDeletedFromFavourites:
+                  summary: "Token already deleted from favourites"
+                  value:
+                    statusCode: 400
+                    type: "field-validation"
+                    details:
+                      name: "token"
+                      message: "Token already deleted from favourites."
+                tokenNotFound:
+                  summary: "Token not found"
+                  value:
+                    statusCode: 400
+                    type: "field-validation"
+                    details:
+                      name: "asset"
+                      message: "Asset not found"
+
+  /wallet/user-currency:
+    get:
+      summary: Get the user's selected currency
+      description: Retrieve the user's preferred currency (name and symbol)
+      operationId: getUserCurrency
+      tags:
+        - Wallet
+      servers:
+        - description: Development Server
+          url: https://dev-wallet.getsafle.com
+        - description: Test Server
+          url: https://test-wallet.getsafle.com
+        - description: Staging Server
+          url: https://stage-wallet.getsafle.com
+        - description: Production Server
+          url: https://b-wallet.getsafle.com  
+      security:
+        - bearerAuth: [] 
+      responses:
+        '200':
+          description: Successfully retrieved user currency
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/getCurrencyResponse'
+        '400':
+          description: "Field validation error or no details found"
+          content:
+            application/json:
+              examples:
+                fieldValidation:
+                  summary: "Field Validation"
+                  value:
+                    statusCode: 400
+                    type: "field-validation"
+                    details:
+                      name: "field validation error name"
+                      message: "field validation error message"
+                noDetailsFound:
+                  summary: "No details found"
+                  value:
+                    statusCode: 400
+                    type: "field-validation"
+                    details:
+                      name: "user"
+                      message: "No details found."
+                
+    post:
+      summary: Save user currency
+      description: Add a new currency (name and symbol) for the user
+      operationId: saveUserCurrency
+      tags:
+        - Wallet
+      servers:
+        - description: Development Server
+          url: https://dev-wallet.getsafle.com
+        - description: Test Server
+          url: https://test-wallet.getsafle.com
+        - description: Staging Server
+          url: https://stage-wallet.getsafle.com
+        - description: Production Server
+          url: https://b-wallet.getsafle.com  
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: "US Dollar"
+                symbol:
+                  type: string
+                  example: "USD"
+      responses:
+        '201':
+          description: Currency successfully added
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/currencyAddedSuccessfully'
+        '400':
+          description: Field validation error or currency already added
+          content:
+            application/json:
+              examples:
+                fieldValidation:
+                  summary: "Field Validation"
+                  value:
+                    statusCode: 400
+                    type: "field-validation"
+                    details:
+                      name: "field validation error name"
+                      message: "field validation error message"
+                userCurrencyAlreadyAdded:
+                  summary: "User currency already added"
+                  value:
+                    statusCode: 400
+                    type: "field-validation"
+                    details:
+                      name: "user"
+                      message: "User currency already added."
+
+    patch:
+      summary: Update user currency
+      description: Update the user's existing currency with new values
+      operationId: updateUserCurrency
+      tags:
+        - Wallet
+      servers:
+        - description: Development Server
+          url: https://dev-wallet.getsafle.com
+        - description: Test Server
+          url: https://test-wallet.getsafle.com
+        - description: Staging Server
+          url: https://stage-wallet.getsafle.com
+        - description: Production Server
+          url: https://b-wallet.getsafle.com  
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: "Euro"
+                symbol:
+                  type: string
+                  example: "EUR"
+      responses:
+        '201':
+          description: Currency successfully updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/currencyAddedSuccessfully'
+        '400':
+          description: Field validation error or user currency not found
+          content:
+            application/json:
+              examples:
+                fieldValidation:
+                  summary: "Field Validation"
+                  value:
+                    statusCode: 400
+                    type: "field-validation"
+                    details:
+                      name: "field validation error name"
+                      message: "field validation error message"
+                userCurrencyNotFound:
+                  summary: "User currency not found"
+                  value:
+                    statusCode: 400
+                    type: "field-validation"
+                    details:
+                      name: "token"
+                      message: "User currency not found."
+  
+  /wallet/connection:
+    post:
+      summary: Save connection details
+      description: Save details of user connections with a DApp
+      operationId: saveConnection
+      tags:
+        - Wallet
+      servers:
+        - description: Development Server
+          url: https://dev-wallet.getsafle.com
+        - description: Test Server
+          url: https://test-wallet.getsafle.com
+        - description: Staging Server
+          url: https://stage-wallet.getsafle.com
+        - description: Production Server
+          url: https://b-wallet.getsafle.com  
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/walletConnectionRequest'
+      responses:
+        '201':
+          description: Connection data successfully added
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/walletConnectionSuccessfull'
+        '400':
+          description: Field validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/fieldValidationError'
+                
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    getUserToken:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          example: 200
+        data:
+          type: object
+          properties:
+            doc:
+              type: array
+              items:
+                type: object
+                properties:
+                  contractAddress:
+                    type: string
+                    example: ""
+                  name:
+                    type: string
+                    example: ""
+                  symbol:
+                    type: string
+                    example: ""
+                  image:
+                    type: string
+                    example: ""
+                  decimals:
+                    type: string
+                    example: ""
+                  chain:
+                    type: string
+                    example: ""
+                  isDeleted:
+                    type: boolean
+                    example: false
+                  isCustom:
+                    type: boolean
+                    example: true
+                  isFavourite:
+                    type: boolean
+                    example: false
+    saveWalletrequest:
+      type: object
+      properties:
+        tokens:
+          type: array
+          items:
+            type: object
+            properties:
+              contractAddress:
+                type: string
+                example: ""
+              chain:
+                type: string
+                example: ""
+              name:
+                type: string
+                example: ""
+              symbol:
+                type: string
+                example: ""
+              decimals:
+                type: string
+                example: ""
+              image:
+                type: string
+                example: ""
+    saveWalletResponse:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          example: 201
+        message:
+          type: object
+          properties:
+            message:
+              type: string
+              example: "Token added successfully."
+            existingTokens:
+              type: array
+              items:
+                type: string
+              example: []
+    fieldValidationError:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          example: 400
+        type:
+          type: string
+          example: "field-validation"
+        details:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+                example: "field validation error name"
+              message:
+                type: string
+                example: "field validation error message"
+    postFavouriteRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          example: tether
+        symbol:
+          type: string
+          example: usdt
+    getFavouriteResponse:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          example: 200
+        data:
+          type: object
+          properties:
+            doc:
+              type: array
+              items:
+                type: object
+                properties:
+                  name:
+                    type: string
+                    example: "tether"
+                  symbol:
+                    type: string
+                    example: "usdt"
+    deleteFavouriteResponse:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          example: 200
+        message:
+          type: string
+          example: "Token successfully deleted from favourites"
+    getCurrencyResponse:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          example: 200
+        data:
+          type: object
+          properties:
+            doc:
+              type: array
+              items:
+                type: object
+                properties:
+                  name:
+                    type: string
+                    example: "US Dollar"
+                  symbol:
+                    type: string
+                    example: "USD"
+    currencyAddedSuccessfully:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          example: 201
+        message:
+          type: string
+          example: "User currency updated successfully."
+    walletConnectionRequest:
+      type: object
+      properties:
+        dappName:
+          type: string
+          example: "Uniswap"
+        dappUrl:
+          type: string
+          example: "uniswap.app"
+        publicAddress:
+          type: string
+          example: "0xsdfghjksdfghj45t6yuicvbnm"
+        timestamp:
+          type: string
+          example: "123456789"
+    walletConnectionSuccessfull:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          example: 201
+        message:
+          type: string
+          example: "Connection data successfully added"

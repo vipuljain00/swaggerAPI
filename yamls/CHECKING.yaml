@@ -1,0 +1,154 @@
+openapi: 3.0.0
+
+info:
+  title: Checking Service
+  version: 1.0.0
+  
+# servers:
+#   - url: https://dev-check.getsafle.com
+#     description: Development environment
+#   - url: https://test-check.getsafle.com
+#     description: Testing environment
+#   - url: https://stage-check.getsafle.com
+#     description: Staging environment
+#   - url: https://b-check.getsafle.com
+#     description: Production environment  
+  
+paths:
+  /checking/check-email/{email}:
+    get:
+      summary: Check if email is registered
+      description: Endpoint to check if an email is registered and its verification status
+      tags:
+        - Checking
+      servers:
+        - url: https://dev-check.getsafle.com
+          description: Development environment
+        - url: https://test-check.getsafle.com
+          description: Testing environment
+        - url: https://stage-check.getsafle.com
+          description: Staging environment
+        - url: https://b-check.getsafle.com
+          description: Production environment  
+      parameters:
+        - name: email
+          in: path
+          required: true
+          description: Email address to check
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Email check successful
+          content:
+            application/json:
+              examples:
+                emaiRegisteredOtpVerified:
+                  summary: "Email is registered and otp verified"
+                  value:
+                    statusCode: 200
+                    data:
+                      isRegistered: true
+                      isEmailVerified: true
+                emaiRegisteredOtpNotVerified:
+                  summary: "Email is registered and otp is not verified"
+                  value:
+                    statusCode: 200
+                    data:
+                      isRegistered: true
+                      isEmailVerified: false
+                emaiNotRegistered:
+                  summary: "Email is not registered"
+                  value:
+                    statusCode: 200
+                    data:
+                      isRegistered: false
+        '400':
+          description: Field validation errors
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FieldValidationError'
+  
+  /checking/check-safleid/{safleid}:
+    get:
+      summary: Check if SafleId is available
+      description: Endpoint to check the availability of a SafleId
+      tags:
+        - Checking
+      servers:
+        - url: https://dev-check.getsafle.com
+          description: Development environment
+        - url: https://test-check.getsafle.com
+          description: Testing environment
+        - url: https://stage-check.getsafle.com
+          description: Staging environment
+        - url: https://b-check.getsafle.com
+          description: Production environment  
+      parameters:
+        - name: safleid
+          in: path
+          required: true
+          description: SafleId to check
+          schema:
+            type: string
+      responses:
+        '200':
+          description: SafleId check successful
+          content:
+            application/json:
+              examples:
+                SafleIdAvailable:
+                  summary: "SafleId is available"
+                  value:
+                    statusCode: 200
+                    data:
+                      isAvailable: true
+                      isReserved: false
+                      oldsafleId: false
+                SafleIdNotAvailable:
+                  summary: "SafleId is not available"
+                  value:
+                    statusCode: 200
+                    data:
+                      isAvailable: false
+                      isReserved: false
+                      oldsafleId: false
+                SafleIdNotAvailableAndOld:
+                  summary: "SafleId is not available and is an old safleID"
+                  value:
+                    statusCode: 200
+                    data:
+                      isAvailable: true
+                      isReserved: false
+                      oldsafleId: true
+        '400':
+          description: Field validation errors
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FieldValidationError'
+  
+ 
+components:
+  schemas:
+    FieldValidationError:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          example: 400
+        type:
+          type: string
+          example: "field-validation"
+        details:
+          type: array
+          items:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "field validation error message"
+              name:
+                type: string
+                example: "field validation error name"

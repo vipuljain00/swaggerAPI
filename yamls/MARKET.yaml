@@ -1,0 +1,813 @@
+openapi: 3.0.0
+
+info:
+  description: Returns Market data
+  version: "1.0.0"
+  title: Market Service 
+
+# servers:
+#   - url: https://dev-data.getsafle.com
+#     description: Development server
+#   - url: https://test-data.getsafle.com
+#     description: Testing server
+#   - url: https://stage-data.getsafle.com
+#     description: Staging server
+#   - url: https://data.getsafle.com
+#     description: Production server
+
+paths:
+  /:
+    get:
+      summary: Get all asset details
+      description: Retrieves the details of all assets including symbol, price, ohlcv, and other info.
+      tags:
+        - Market
+      servers:
+        - url: https://dev-data.getsafle.com
+          description: Development server
+        - url: https://test-data.getsafle.com
+          description: Testing server
+        - url: https://stage-data.getsafle.com
+          description: Staging server
+        - url: https://data.getsafle.com
+          description: Production server
+      responses:
+        '200':
+          description: Successful response with asset details
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AssetDetails'
+        '400':
+          description: Bad request - Field validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FieldValidationError'
+                
+  /latest-price:
+    get:
+      summary: Get the latest price for a coin or token
+      description: Fetches the latest price details for a specific coin or token, either by coin symbol or token contract address.
+      tags:
+        - Market
+      servers:
+        - url: https://dev-data.getsafle.com
+          description: Development server
+        - url: https://test-data.getsafle.com
+          description: Testing server
+        - url: https://stage-data.getsafle.com
+          description: Staging server
+        - url: https://data.getsafle.com
+          description: Production server  
+      parameters:
+        - name: coin
+          in: query
+          description: Coin symbol (e.g., `btc`)
+          required: false
+          schema:
+            type: string
+        - name: contractAddress
+          in: query
+          description: Token contract address (e.g., `0xdac17f958d2ee523a2206206994597c13d831ec7` for USDT)
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response with latest price data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PriceResponse'
+                
+  /ohlcv:
+    get:
+      summary: Get OHLCV data
+      description: Fetch OHLCV data for coins or tokens using either the coin symbol or contract address.
+      tags:
+        - Market
+      servers:
+        - url: https://dev-data.getsafle.com
+          description: Development server
+        - url: https://test-data.getsafle.com
+          description: Testing server
+        - url: https://stage-data.getsafle.com
+          description: Staging server
+        - url: https://data.getsafle.com
+          description: Production server  
+      parameters:
+        - in: query
+          name: interval
+          required: true
+          schema:
+            type: string
+            description: "Interval for ohlcv"
+            example: "hourly"
+        - in: query
+          name: time_start
+          required: true
+          schema:
+            type: string
+            format: date-time
+            description: "Starting time for ohlcv"
+            example: "2021-05-04T09:16:09.804Z"
+        - in: query
+          name: time_end
+          required: true
+          schema:
+            type: string
+            description: "ending time for ohlcv"
+            format: date-time
+            example: "2022-04-04T09:16:09.804Z"
+        - in: query
+          name: coin
+          required: true
+          schema:
+            type: string
+            description: Coin symbol (e.g., `btc`, `eth`)
+            example: "eth"
+        - in: query
+          name: contractAddress
+          required: false
+          schema:
+            type: string
+            description: Contract Address for coin
+      responses:
+        '200':
+          description: Successful response with OHLCV data (The data returned from the API represents a span of 1 month with each object representing 1 day. For the candle graph, the open and close represent the wick of the candle and low, high represent the top and bottom of the candle.)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OHLCVResponse'
+        
+  /info:
+    get:
+      summary: Fetch token or coin details
+      description: Retrieve details for a cryptocurrency coin or token using either the contract address or coin symbol.
+      tags:
+        - Market
+      servers:
+        - url: https://dev-data.getsafle.com
+          description: Development server
+        - url: https://test-data.getsafle.com
+          description: Testing server
+        - url: https://stage-data.getsafle.com
+          description: Staging server
+        - url: https://data.getsafle.com
+          description: Production server  
+      parameters:
+        - in: query
+          name: contractAddress
+          required: false
+          description: Token contract address (e.g. `0xdac17f958d2ee523a2206206994597c13d831ec7` for USDT).
+          schema:
+            type: string
+        - in: query
+          name: Coin
+          required: false
+          description: Cryptocurrency coin symbol (e.g. `btc` for Bitcoin).
+          schema: 
+            type: string
+      responses:
+        '200':
+          description: Successfully retrieved token or coin information.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InfoResponse'
+        '400':
+          description: Invalid request. Either `contractAddress` or `coin` must be provided.
+          
+  /conversion-rate:
+    get:
+      summary: Returns conversion rates from USD to the provided currency
+      tags:
+        - Market
+      servers:
+        - url: https://dev-data.getsafle.com
+          description: Development server
+        - url: https://test-data.getsafle.com
+          description: Testing server
+        - url: https://stage-data.getsafle.com
+          description: Staging server
+        - url: https://data.getsafle.com
+          description: Production server  
+      parameters:
+        - in: query
+          name: symbol
+          schema:
+            type: string
+          required: true
+          description: Currency symbol for conversion (e.g `GBP`)
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConversionRateResponse'        
+          
+  /historical-listing:
+    get:
+      summary: Returns historical listing data for a provided symbol and timestamp
+      tags:
+        - Market
+      servers:
+        - url: https://dev-data.getsafle.com
+          description: Development server
+        - url: https://test-data.getsafle.com
+          description: Testing server
+        - url: https://stage-data.getsafle.com
+          description: Staging server
+        - url: https://data.getsafle.com
+          description: Production server  
+      parameters:
+        - in: query
+          name: symbol
+          schema:
+            type: string
+          required: true
+          description: Cryptocurrency symbol (e.g., BTC)
+        - in: query
+          name: timestamp
+          schema:
+            type: string
+            format: date-time
+          required: true
+          description: Timestamp for historical data
+        - in: query
+          name: interval
+          schema:
+            type: string
+            enum: [1m, 5m, 10m, 1h]
+          required: false
+          description: Interval of data (e.g., 1m for 1 minute, 1h for 1 hour)
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HistoricalListingResponse'
+          
+components:
+  schemas:
+    AssetDetails:
+      type: object
+      properties:
+        symbol:
+          type: string
+          example: ' '
+          description: Asset symbol
+        price:
+          type: object
+          description: Asset price details
+        ohlcv:
+          type: object
+          description: OHLCV (Open, High, Low, Close, Volume) data
+        info:
+          type: object
+          description: Additional asset information
+    PriceResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            status:
+              type: object
+              properties:
+                timestamp:
+                  type: string
+                  format: date-time
+                error_code:
+                  type: integer
+                  example: 0
+                error_message:
+                  type: string
+                  nullable: true
+                elapsed:
+                  type: integer
+                  description: Time taken for the request in ms
+                credit_count:
+                  type: integer
+                  description: Credit count used
+                notice:
+                  type: string
+                  nullable: true
+            data:
+              type: object
+              properties:
+                UNI:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    name:
+                      type: string
+                    symbol:
+                      type: string
+                    slug:
+                      type: string
+                    num_market_pairs:
+                      type: integer
+                    date_added:
+                      type: string
+                      format: date-time
+                    tags:
+                      type: array
+                      items:
+                        type: string
+                    max_supply:
+                      type: number
+                    circulating_supply:
+                      type: number
+                    total_supply:
+                      type: number
+                    platform:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        name:
+                          type: string
+                        symbol:
+                          type: string
+                        slug:
+                          type: string
+                        token_address:
+                          type: string
+                    is_active:
+                      type: integer
+                    cmc_rank:
+                      type: integer
+                    is_fiat:
+                      type: integer
+                    last_updated:
+                      type: string
+                      format: date-time
+                    quote:
+                      type: object
+                      properties:
+                        USD:
+                          type: object
+                          properties:
+                            price:
+                              type: number
+                            volume_24h:
+                              type: number
+                            volume_change_24h:
+                              type: number
+                            percent_change_1h:
+                              type: number
+                            percent_change_24h:
+                              type: number
+                            percent_change_7d:
+                              type: number
+                            percent_change_30d:
+                              type: number
+                            percent_change_60d:
+                              type: number
+                            percent_change_90d:
+                              type: number
+                            market_cap:
+                              type: number
+                            market_cap_dominance:
+                              type: number
+                            fully_diluted_market_cap:
+                              type: number
+                            last_updated:
+                              type: string
+                              format: date-time
+    
+    OHLCVResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            status:
+              type: object
+              properties:
+                timestamp:
+                  type: string
+                  format: date-time
+                error_code:
+                  type: integer
+                error_message:
+                  type: string
+                  nullable: true
+                elapsed:
+                  type: integer
+                credit_count:
+                  type: integer
+                notice:
+                  type: string
+                  nullable: true
+            data:
+              type: object
+              properties:
+                id:
+                  type: integer
+                name:
+                  type: string
+                symbol:
+                  type: string
+                quotes:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/OHLCVQuote'
+    OHLCVQuote:
+      type: object
+      properties:
+        time_open:
+          type: string
+          format: date-time
+        time_close:
+          type: string
+          format: date-time
+        time_high:
+          type: string
+          format: date-time
+        time_low:
+          type: string
+          format: date-time
+        quote:
+          type: object
+          properties:
+            USD:
+              $ref: '#/components/schemas/QuoteDetails'
+    QuoteDetails:
+      type: object
+      properties:
+        open:
+          type: number
+          format: double
+        high:
+          type: number
+          format: double
+        low:
+          type: number
+          format: double
+        close:
+          type: number
+          format: double
+        volume:
+          type: number
+        market_cap:
+          type: number
+        timestamp:
+          type: string
+          format: date-time
+          
+    InfoResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            status:
+              type: object
+              properties:
+                timestamp:
+                  type: string
+                  format: date-time
+                  example: "2021-12-04T14:20:50.452Z"
+                error_code:
+                  type: integer
+                  example: 0
+                error_message:
+                  type: string
+                  nullable: true
+                  example: null
+                elapsed:
+                  type: integer
+                  example: 17
+                credit_count:
+                  type: integer
+                  example: 1
+                notice:
+                  type: string
+                  nullable: true
+                  example: null
+            data:
+              type: object
+              properties:
+                UNI:
+                  $ref: '#/components/schemas/TokenInfo'
+    TokenInfo:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 7083
+        name:
+          type: string
+          example: "Uniswap"
+        symbol:
+          type: string
+          example: "UNI"
+        category:
+          type: string
+          example: "token"
+        description:
+          type: string
+          example: "Uniswap (UNI) is a cryptocurrency launched in 2020 and operates on the Ethereum platform..."
+        slug:
+          type: string
+          example: "uniswap"
+        logo:
+          type: string
+          example: "https://s2.coinmarketcap.com/static/img/coins/64x64/7083.png"
+        subreddit:
+          type: string
+          example: "Uniswap"
+        notice:
+          type: string
+          nullable: true
+          example: ""
+        tags:
+          type: array
+          items:
+            type: string
+            example: "decentralized-exchange"
+        tag-names:
+          type: array
+          items:
+            type: string
+            example: "Decentralized Exchange"
+        tag-groups:
+          type: array
+          items:
+            type: string
+            example: "CATEGORY"
+        urls:
+          type: object
+          properties:
+            website:
+              type: array
+              items:
+                type: string
+                example: "https://uniswap.org/"
+            twitter:
+              type: array
+              items:
+                type: string
+                example: "https://twitter.com/Uniswap"
+            message_board:
+              type: array
+              items:
+                type: string
+                example: "https://uniswap.org/blog/"
+            chat:
+              type: array
+              items:
+                type: string
+                example: "https://discord.gg/FCfyBSbCU5"
+            facebook:
+              type: array
+              items:
+                type: string
+              example: []
+            explorer:
+              type: array
+              items:
+                type: string
+                example: "https://etherscan.io/token/0x1f9840a85d5af5bf1d1762f925bdaddc4201f984"
+            reddit:
+              type: array
+              items:
+                type: string
+                example: "https://reddit.com/r/Uniswap"
+            technical_doc:
+              type: array
+              items:
+                type: string
+              example: []  
+            source_code:
+              type: array
+              items:
+                type: string
+              example: []  
+            announcement:
+              type: array
+              items:
+                type: string
+              example: []  
+        platform:
+          type: object
+          properties:
+            id:
+              type: integer
+              example: 1027
+            name:
+              type: string
+              example: "Ethereum"
+            symbol:
+              type: string
+              example: "ETH"
+            slug:
+              type: string
+              example: "ethereum"
+            token_address:
+              type: string
+              example: "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984"
+        date_added:
+          type: string
+          format: date-time
+          example: "2020-09-17T00:00:00.000Z"
+        twitter_username:
+          type: string
+          example: "Uniswap"
+        is_hidden:
+          type: integer
+          example: 0
+        date_launched:
+          type: string
+          format: date-time
+          example: "2020-09-17T00:00:00.000Z"
+        contract_address:
+          type: array
+          items:
+            type: object
+            properties:
+              contract_address:
+                type: string
+                example: "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984"
+              platform:
+                type: object
+                properties:
+                  name:
+                    type: string
+                    example: "Ethereum"
+                  coin:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: "1027"
+                      name:
+                        type: string
+                        example: "Ethereum"
+                      symbol:
+                        type: string
+                        example: "ETH"
+                      slug:
+                        type: string
+                        example: "ethereum"
+        self_reported_circulating_supply:
+          type: string
+          nullable: true
+          example: null
+        self_reported_tags:
+          type: array
+          items:
+            type: string
+          nullable: true
+          example: null
+
+    ConversionRateResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            success:
+              type: boolean
+              example: true
+            timestamp:
+              type: integer
+              example: 1653647343
+            base:
+              type: string
+              example: "USD"
+            date:
+              type: string
+              example: "2022-05-27"
+            rates:
+              type: object
+              properties:
+                GBP:
+                  type: number
+                  example: 0.79287
+                  
+    HistoricalListingResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            status:
+              type: object
+              properties:
+                timestamp:
+                  type: string
+                  format: date-time
+                  example: "2022-06-29T05:08:50.579Z"
+                error_code:
+                  type: integer
+                  example: 0
+                error_message:
+                  type: string
+                  nullable: true
+                  example: null
+                elapsed:
+                  type: integer
+                  example: 38
+                credit_count:
+                  type: integer
+                  example: 1
+                notice:
+                  type: string
+                  nullable: true
+                  example: null
+            data:
+              type: object
+              properties:
+                quotes:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Quote'
+                id:
+                  type: integer
+                  example: 1
+                name:
+                  type: string
+                  example: "Bitcoin"
+                symbol:
+                  type: string
+                  example: "BTC"
+                is_active:
+                  type: integer
+                  example: 1
+                is_fiat:
+                  type: integer
+                  example: 0              
+    
+    
+    Quote:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+          example: "2022-05-27T08:19:00.000Z"
+        quote:
+          type: object
+          properties:
+            USD:
+              type: object
+              properties:
+                price:
+                  type: number
+                  example: 29082.76560145259
+                volume_24h:
+                  type: number
+                  example: 44054488307.20291
+                market_cap:
+                  type: number
+                  example: 554044308863.6263
+                total_supply:
+                  type: number
+                  example: 19050606
+                circulating_supply:
+                  type: number
+                  example: 19050606
+                timestamp:
+                  type: string
+                  format: date-time
+                  example: "2022-05-27T08:19:00.000Z"
+    
+    FieldValidationError:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          example: 400
+        type:
+          type: string
+          example: field-validation
+        details:
+          type: array
+          items:
+            type: object
+            properties:
+              message:
+                type: string
+                example: field validation error message
+              name:
+                type: string 
+                example: field validation error name
+
+    NotFoundError:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          example: 404
+        message:
+          type: string
+          example: "Assets not found"

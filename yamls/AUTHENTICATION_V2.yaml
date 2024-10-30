@@ -1,0 +1,1299 @@
+openapi: 3.0.0
+
+info:
+  title: Authentication Service V2 API
+  description: API for user authentication and authorization.
+  version: 1.0.0
+  
+# servers:
+#   - url: https://dev-auth-v2.getsafle.com
+#     description: Development Server
+#   - url: https://test-auth-v2.getsafle.com
+#     description: Testing Server
+#   - url: https://stage-auth-v2.getsafle.com
+#     description: Staging Server
+#   - url: https://auth-v2.getsafle.com
+#     description: Production Server  
+
+paths:
+  /auth/registration:
+    post:
+      summary: User registration
+      description: Endpoint for user registration
+      tags:
+        - Authentication V2
+      servers:
+        - url: https://dev-auth-v2.getsafle.com
+          description: Development Server
+        - url: https://test-auth-v2.getsafle.com
+          description: Testing Server
+        - url: https://stage-auth-v2.getsafle.com
+          description: Staging Server
+        - url: https://auth-v2.getsafle.com
+          description: Production Server    
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRegistrationRequest'
+      responses:
+        '201':
+          description: Registration success response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegistrationSuccessResponse'
+        '400':
+          description: Field validation error or SafleId already registered
+          content:
+            application/json:
+              examples: 
+                FieldValidationError:
+                  summary: Field validation error
+                  value:
+                    type: "field-validation"
+                    details:
+                      - name: "field validation error name"
+                        message: "field validation error message"
+                SafleIdAlreadyRegisteredError:
+                  summary: SafleId is already registered
+                  value:
+                    error:
+                      - name: "safleId"
+                        message: "SafleId already registered"        
+
+  /auth/local:
+    post:
+      summary: User login
+      description: User login endpoint using username and password (PDKeyHashHex). Returns JWT for authenticating user requests.
+      tags:
+        - Authentication V2
+      servers:
+        - url: https://dev-auth-v2.getsafle.com
+          description: Development Server
+        - url: https://test-auth-v2.getsafle.com
+          description: Testing Server
+        - url: https://stage-auth-v2.getsafle.com
+          description: Staging Server
+        - url: https://auth-v2.getsafle.com
+          description: Production Server  
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserLoginRequest'
+      responses:
+        '200':
+          description: Login successful, returns JWT and refresh token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginSuccessResponse'
+              
+        '400':
+          description: Various field validation errors (invalid credentials, unregistered user, etc.)
+          content:
+            application/json:
+              examples:
+                FieldValidationError:
+                  summary: Field validation error
+                  value:
+                    type: "field-validation"
+                    details:
+                      - name: "field validation error name"
+                        message: "field validation error message"
+                IncorrectPasswordError:
+                  summary: Incorrect password
+                  value:
+                    statusCode: 400
+                    type: "field-validation"
+                    details:
+                      - name: "password"
+                        message: "This password is incorrect."
+                UnregisteredUserError:
+                  summary: User not registered
+                  value:
+                    details:
+                      - name: "userName"
+                        message: "This email or safleId is not registered."
+                DeletedUserError:
+                  summary: User has been deleted
+                  value:
+                    type: "field-validation"
+                    details:
+                      - name: "user"
+                        message: "User has been deleted"
+                UserDataExpiredError:
+                  summary: User data expired
+                  value:
+                    type: "field-validation"
+                    details:
+                      - name: "userName"
+                        message: "User data expired. Please register again."
+                UserVersionError:
+                  summary: User on an old version of the application
+                  value:
+                    type: "field-validation"
+                    details:
+                      - name: "userVersion"
+                        message: "User needs to migrate to the latest version."  
+
+  /auth/check-safleid/{safleId}:
+    get:
+      summary: Check SafleID status
+      description: Endpoint to check if a given SafleID is available, reserved, or an old SafleID.
+      tags:
+        - Authentication V2
+      servers:
+        - url: https://dev-auth-v2.getsafle.com
+          description: Development Server
+        - url: https://test-auth-v2.getsafle.com
+          description: Testing Server
+        - url: https://stage-auth-v2.getsafle.com
+          description: Staging Server
+        - url: https://auth-v2.getsafle.com
+          description: Production Server
+      parameters:
+        - name: safleId
+          in: path
+          required: true
+          description: The SafleID to check
+          schema:
+            type: string
+            example: "mySafleID123"
+      responses:
+        '200':
+          description: SafleID status information
+          content:
+            application/json:
+              examples:
+                SafleIdAvailable:
+                  summary: SafleID is available
+                  value:
+                    data:
+                      isAvailable: true
+                      isReserved: false
+                      oldSafleId: true
+                OldSafleId:
+                  summary: SafleID is not available (old SafleID)
+                  value:
+                    data:
+                      isAvailable: false
+                      isReserved: false
+                      oldSafleId: true
+                SafleIdTemporarilyBlocked:
+                  summary: SafleID is temporarily blocked
+                  value:
+                    data:
+                      isAvailable: false
+                      isReserved: true
+                      oldSafleId: true
+        '400':
+          description: Field validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FieldValidationError'
+  
+  /auth/me:
+    get:
+      summary: Get user details by ID
+      description: Fetches user details based on the provided authorization token.
+      tags:
+        - Authentication V2
+      servers:
+        - url: https://dev-auth-v2.getsafle.com
+          description: Development Server
+        - url: https://test-auth-v2.getsafle.com
+          description: Testing Server
+        - url: https://stage-auth-v2.getsafle.com
+          description: Staging Server
+        - url: https://auth-v2.getsafle.com
+          description: Production Server  
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: User details successfully retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDetailsResponse'
+        '401':
+          description: Unauthorized access
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedAcess'        
+  
+  /auth/forgot-password:
+    post:
+      summary: Generate forgot password scope token to reset password
+      description: This endpoint generates a token that allows the user to reset their password.
+      tags:
+        - Authentication V2
+      servers:
+        - url: https://dev-auth-v2.getsafle.com
+          description: Development Server
+        - url: https://test-auth-v2.getsafle.com
+          description: Testing Server
+        - url: https://stage-auth-v2.getsafle.com
+          description: Staging Server
+        - url: https://auth-v2.getsafle.com
+          description: Production Server  
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ForgotPasswordRequest'
+      responses:
+        '200':
+          description: Successfully generated token for resetting password
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForgotPasswordResponse'
+        '400':
+          description: Bad request due to field validation or unregistered email
+          content:
+            application/json:
+              examples:
+                FieldValidationError:
+                  summary: Field validation error
+                  value:
+                    type: "field-validation"
+                    details:
+                      - name: "field validation error name"
+                        message: "field validation error message"
+                Email is not Registered:
+                  summary: Email is not registered.
+                  value:
+                    error:
+                      - name: "User"
+                        message: "No User Found or Public Address does not match"
+        '401':
+          description: Unauthorized access
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedAcess'                
+
+  /auth/reset-password:
+    post:
+      summary: Reset password
+      description: This endpoint allows the user to reset their password.
+      tags:
+        - Authentication V2
+      servers:
+        - url: https://dev-auth-v2.getsafle.com
+          description: Development Server
+        - url: https://test-auth-v2.getsafle.com
+          description: Testing Server
+        - url: https://stage-auth-v2.getsafle.com
+          description: Staging Server
+        - url: https://auth-v2.getsafle.com
+          description: Production Server
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResetPasswordRequest'
+      responses:
+        '200':
+          description: Password reset successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResetPasswordResponse'
+        '400':
+          description: Bad request due to field validation or user-related errors
+          content:
+            application/json:
+              examples:
+                FieldValidationError:
+                  summary: Field validation error
+                  value:
+                    type: "field-validation"
+                    details:
+                      - name: "field validation error name"
+                        message: "field validation error message"
+                UserDeletedError:
+                  summary: the user is deleted
+                  value:
+                    error:
+                      - name: "User"
+                        message: "User has been deleted"  
+        '401':
+          description: Unauthorized access
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedAcess'                
+
+  /auth/change-password:
+    post:
+      summary: Change password
+      description: This endpoint allows the user to change their password.
+      tags:
+        - Authentication V2
+      servers:
+        - url: https://dev-auth-v2.getsafle.com
+          description: Development Server
+        - url: https://test-auth-v2.getsafle.com
+          description: Testing Server
+        - url: https://stage-auth-v2.getsafle.com
+          description: Staging Server
+        - url: https://auth-v2.getsafle.com
+          description: Production Server  
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangePasswordRequest'
+      responses:
+        '200':
+          description: Password changed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChangePasswordResponse'
+        '400':
+          description: Bad request due to field validation or incorrect password
+          content:
+            application/json:
+              examples: 
+                FieldValidationError:
+                  summary: field validation error
+                  value:
+                    type: "field-validation"
+                    details:
+                      - name: "field validation error name"
+                        message: "field validation error message"
+                IncorrectOldPassword:
+                  summary: the old password is incorrect
+                  value:
+                    error:
+                      - name: "Password"
+                        message: "Incorrect old password"
+        '401':
+          description: Unauthorized access
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedAcess'                
+
+  /auth/refresh-token:
+    get:
+      summary: Get user refresh token
+      description: This endpoint returns a refreshed token for the user.
+      tags:
+        - Authentication V2
+      servers:
+        - url: https://dev-auth-v2.getsafle.com
+          description: Development Server
+        - url: https://test-auth-v2.getsafle.com
+          description: Testing Server
+        - url: https://stage-auth-v2.getsafle.com
+          description: Staging Server
+        - url: https://auth-v2.getsafle.com
+          description: Production Server  
+      security:
+        - bearerAuth: [] 
+      responses:
+        '200':
+          description: Successfully retrieved refresh token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RefreshTokenResponse'
+        '401':
+          description: Unauthorized access
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedAcess'        
+
+  /auth/polygon:
+    post:
+      summary: Save polygon data after SafleID is pushed to the Polygon blockchain
+      description: Endpoint to save polygon data, after SafleID and transaction details after being pushed to the blockchain.
+      tags:
+        - Authentication V2
+      servers:
+        - url: https://dev-auth-v2.getsafle.com
+          description: Development Server
+        - url: https://test-auth-v2.getsafle.com
+          description: Testing Server
+        - url: https://stage-auth-v2.getsafle.com
+          description: Staging Server
+        - url: https://auth-v2.getsafle.com
+          description: Production Server
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PolygonDataRequest'
+      responses:
+        '200':
+          description: Transaction data saved successfully
+          content:
+            application/json:
+              examples:
+                SavedData:
+                  summary: Transaction data saved successfully
+                  value:
+                    data:
+                      message: "Data saved Successfully"
+                      token: "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6IjE5NzMxNWM5LWRlY2QtNDAxNS1iNjI3LTk4MTkxNTdjOGNjNyJ9.eyJ1c2VySWQiOiI2NjYxNWVhNjAyODVmNjUxNGI0OTQ1ZDgiLCJzYWZsZUlkIjoic2h1YmhhbXNzMTIzIiwiaXNTYWZsZUlkUmVnaXN0ZXJlZE9uUG9seWdvbiI6dHJ1ZSwicHVibGljQWRkcmVzcyI6IjB4ODEwMkVlZTM2MDc5RTUyMzg0MGM1N2I0NTMxNWUwNTcxQkZGRUFDOWRmcyIsImlhdCI6MTcxODAwMjY1NSwiZXhwIjoxNzIwNTk0NjU1LCJhdWQiOlsicGxhdGZvcm0iXSwiaXNzIjoiSW5ibG94IG5ldHdvcmtzIHByaXZhdGUgbGltaXRlZCIsInN1YiI6ImRldmVsb3BlcmtAaW5ibG94Lm1lIn0.AFMpmciI_xnlfDDxebGMewLiAeUUXkVFlSCjHYb7XujTQnxBdlltrmdojRJksP0W5HbLbq8g29RKRKE94U5UaMNUaE8CVOTlaH6IL8VKmRkLZ_lz9KjJDO19RM8TIpOg3zpVD_dY9c8F6-8m5cMJJlDdbAxoXkxQqUdz-DUu5E0"
+                ErrorSavingData:
+                  summary: Transaction error saved successfully.
+                  value:
+                    data:
+                      message: "SafleId registration error message have been logged."
+        '400':
+          description: Validation or registration error
+          content:
+            application/json:
+              examples:
+                FieldValidationError:
+                  summary: Field validation error
+                  value:
+                    statusCode: 400
+                    type: "field-validation"
+                    details:
+                      - name: "field validation error name"
+                        message: "field validation error message"
+                MaxSafleIdsError:
+                  summary: User exceeds the limit of 3 SafleIDs
+                  value:
+                    error:
+                      - name: "blockchain"
+                        message: "User cannot have more than 3 safleIds"
+        '401':
+          description: Unauthorized access
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedAcess'                
+  
+  /auth/registration-status:
+    get:
+      summary: Check SafleID registration status
+      description: Endpoint to check the current registration status of a SafleID.
+      tags:
+        - Authentication V2
+      servers:
+        - url: https://dev-auth-v2.getsafle.com
+          description: Development Server
+        - url: https://test-auth-v2.getsafle.com
+          description: Testing Server
+        - url: https://stage-auth-v2.getsafle.com
+          description: Staging Server
+        - url: https://auth-v2.getsafle.com
+          description: Production Server
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: SafleID registration status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SafleIdRegistrationStatusResponse'
+        '401':
+          description: Unauthorized access
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedAcess'
+  
+  /auth/link-wallet:
+    post:
+      summary: Save linked wallet data
+      description: Endpoint to save data of wallet linked to a user's SafleID on a specific blockchain network.
+      tags:
+        - Authentication V2
+      servers:
+        - url: https://dev-auth-v2.getsafle.com
+          description: Development Server
+        - url: https://test-auth-v2.getsafle.com
+          description: Testing Server
+        - url: https://stage-auth-v2.getsafle.com
+          description: Staging Server
+        - url: https://auth-v2.getsafle.com
+          description: Production Server
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LinkWalletRequest'
+      responses:
+        '201':
+          description: Wallet linked successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LinkWalletSuccessResponse'
+        '400':
+          description: Bad request or field validation error
+          content:
+            application/json:
+              examples:
+                FieldValidationError:
+                  summary: Field validation error
+                  value:
+                    type: "field-validation"
+                    details:
+                      - name: "field validation error name"
+                        message: "field validation error message"
+                UserNotFound:
+                  summary: User not found error
+                  value:
+                    error:
+                      name: "user"
+                      message: "User not found"
+                WalletAlreadyLinked:
+                  summary: Wallet already linked on the chain
+                  value:
+                    error:
+                      name: "wallet"
+                      message: "User cannot link more than one wallet on a chain"
+        '401':
+          description: Unauthorized access
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedAcess'              
+    patch:
+      summary: Update linked wallet data
+      description: Update the wallet's public address on a specific blockchain network for a user's SafleID.
+      tags:
+        - Authentication V2
+      servers:
+        - url: https://dev-auth-v2.getsafle.com
+          description: Development Server
+        - url: https://test-auth-v2.getsafle.com
+          description: Testing Server
+        - url: https://stage-auth-v2.getsafle.com
+          description: Staging Server
+        - url: https://auth-v2.getsafle.com
+          description: Production Server
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateWalletRequest'
+      responses:
+        '201':
+          description: Wallet data updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateWalletSuccessResponse'
+        '400':
+          description: Bad request or field validation error
+          content:
+            application/json:
+              examples:
+                FieldValidationError:
+                  summary: Field validation error
+                  value:
+                    type: "field-validation"
+                    details:
+                      - name: "field validation error name"
+                        message: "field validation error message"
+                UserNotFound:
+                  summary: User not found error
+                  value:
+                    error:
+                      name: "user"
+                      message: "User not found"
+                NoWalletsLinked:
+                  summary: No wallets linked for the chain error
+                  value:
+                    error:
+                      name: "wallet"
+                      message: "No wallets linked for the chain"
+        '401':
+          description: Unauthorized access
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedAcess'              
+  
+  /auth/delete-user:
+    delete:
+      summary: Delete user
+      description: Permanently delete a user from the system.
+      tags:
+        - Authentication V2
+      servers:
+        - url: https://dev-auth-v2.getsafle.com
+          description: Development Server
+        - url: https://test-auth-v2.getsafle.com
+          description: Testing Server
+        - url: https://stage-auth-v2.getsafle.com
+          description: Staging Server
+        - url: https://auth-v2.getsafle.com
+          description: Production Server
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: User deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteUserSuccessResponse'
+        '400':
+          description: Field validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized access
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedAcess'
+
+  /auth/user-status/{username}:
+    get:
+      summary: Check if user is active or deleted
+      description: Returns whether the user is active or has been deleted.
+      tags:
+        - Authentication V2
+      servers:
+        - url: https://dev-auth-v2.getsafle.com
+          description: Development Server
+        - url: https://test-auth-v2.getsafle.com
+          description: Testing Server
+        - url: https://stage-auth-v2.getsafle.com
+          description: Staging Server
+        - url: https://auth-v2.getsafle.com
+          description: Production Server
+      parameters:
+        - in: path
+          name: username
+          required: true
+          schema:
+            type: string
+          description: Username to check the status for
+      responses:
+        '200':
+          description: User status response
+          content:
+            application/json:
+              examples:
+                UserActive:
+                  summary: User is active
+                  value:
+                    data:
+                      isActive: "true"
+                UserDeleted:
+                  summary: User has been deleted
+                  value:
+                    data:
+                      isActive: "false"
+        '400':
+          description: User not found
+          content:
+            application/json:
+              examples:
+                UserNotFound:
+                  summary: User does not exist
+                  value:
+                    type: "field-validation"
+                    details:
+                      - name: "userName"
+                        message: "User not found."
+  
+  /auth/recovery:
+    post:
+      summary: Update recovery setup status
+      description: Update the user's recovery setup status.
+      tags:
+        - Authentication V2
+      servers:
+        - url: https://dev-auth-v2.getsafle.com
+          description: Development Server
+        - url: https://test-auth-v2.getsafle.com
+          description: Testing Server
+        - url: https://stage-auth-v2.getsafle.com
+          description: Staging Server
+        - url: https://auth-v2.getsafle.com
+          description: Production Server
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateRecoverySetupRequest'
+      security:
+        - bearerAuth: []
+      responses:
+        '201':
+          description: Recovery setup updated successfully
+          content:
+            application/json:
+              examples:
+                SuccessResponse:
+                  summary: Successfully updated recovery setup
+                  value:
+                    data:
+                      message: "Data Saved successfully."
+                      token: " "
+        '400':
+          description: Field validation error or user not found
+          content:
+            application/json:
+              examples:
+                UserNotFound:
+                  summary: Field Validation Error
+                  value:
+                    error:
+                      - name: " "
+                        message: " " 
+        '401':
+          description: Unauthorized access
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedAcess'                
+    get:
+      summary: Get recovery setup status
+      description: Retrieve the recovery setup status for a user.
+      tags:
+        - Authentication V2
+      servers:
+        - url: https://dev-auth-v2.getsafle.com
+          description: Development Server
+        - url: https://test-auth-v2.getsafle.com
+          description: Testing Server
+        - url: https://stage-auth-v2.getsafle.com
+          description: Staging Server
+        - url: https://auth-v2.getsafle.com
+          description: Production Server
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Recovery setup status retrieved successfully
+          content:
+            application/json:
+              examples:
+                SuccessResponse:
+                  summary: Recovery setup is retrieved
+                  value:
+                    data:
+                      isRecoverySetup: true
+        '401':
+          description: Unauthorized access
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedAcess'              
+
+  /auth/credentials:
+    patch:
+      summary: Update user credentials
+      description: Update user credentials
+      tags:
+        - Authentication V2
+      servers:
+        - url: https://dev-auth-v2.getsafle.com
+          description: Development Server
+        - url: https://test-auth-v2.getsafle.com
+          description: Testing Server
+        - url: https://stage-auth-v2.getsafle.com
+          description: Staging Server
+        - url: https://auth-v2.getsafle.com
+          description: Production Server
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CredentialsUpdateRequest'
+      responses:
+        '201':
+          description: Data Saved Successfully.
+          content:
+            application/json:
+              examples:
+                SuccessResponse:
+                  summary: Data Saved Successfully.
+                  value:
+                    data:
+                      message: "Data Saved successfully."
+            
+        '400':
+          description: Field validation error 
+          content:
+            application/json:
+              examples:
+                FieldValidationError:
+                  summary: field validation error
+                  value:
+                    type: "field-validation"
+                    details:
+                      - name: "field validation error name"
+                        message: "field validation error message"
+        '401':
+          description: Unauthorized access
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedAcess'           
+      
+components:
+  schemas:
+    UserRegistrationRequest:
+      type: object
+      properties:
+        PDKeyHash:
+          type: string
+          description: Hash of the Password Derived key
+          example: "07e15d27b0ff045269d1f9e50b2c049d9552b7a7eb87b0b64d37c61720a42b3a"
+        hashedPassword:
+          type: string
+          description: The user's hashed password
+          example: "93e2207fd9548acb9ea0b3bea6956f3910021d583d841547832d2018c162f7b4"
+        encryptedEncryptionKey:
+          type: array
+          items:
+            type: integer
+          description: Encrypted key array
+          example: [161, 69, 231, 232, 141, 140, 100]
+        g-recaptcha-response:
+          type: string
+          description: Google reCAPTCHA response token
+          example: "03AIIukzhbnekSeLBNanG1ma1tIfaFhtPEDufPRYRnE5PcqE-zuV5..."
+        safleId:
+          type: string
+          description: User's Safle ID
+          example: "johndoe5"  
+      required:
+        - hashedPassword
+        - encryptedEncryptionKey
+        - safleId
+        - PDKeyHash
+        - g-recaptcha-response
+    RegistrationSuccessResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            message:
+              type: string
+              description: Success message
+              example: "successfully email sent."
+    UserLoginRequest:
+      type: object
+      properties:
+        username:
+          type: string
+          description: Username or SafleId of the user
+          example: "myusername"
+        password:
+          type: string
+          description: The PDKeyHashHex (password)
+          example: "93e2207fd9548acb9ea0b3bea6956f3910021d583d841547832d2018c162f7b4"
+        g-recaptcha-response:
+          type: string
+          description: Google reCAPTCHA response token
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.e30..."
+      required:
+        - username
+        - password
+        - g-recaptcha-response
+    LoginSuccessResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            authToken:
+              type: string
+              description: JWT token for authenticating user requests
+              example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.e30.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+            refreshToken:
+              type: string
+              description: Token for refreshing the authentication session
+              example: "def50200854..."
+    UserDetailsResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            blockchain:
+              type: object
+              properties:
+                ethereum:
+                  type: array
+                  items: {}
+                  example: []
+                polygon:
+                  type: array
+                  items: {}
+                  example: []
+            vaultStorage:
+              type: object
+            isSafleIdRegisteredOnPolygon:
+              type: boolean
+              example: true
+            isClosedBeta:
+              type: boolean
+              example: false
+            migratedVersions:
+              type: array
+              items: {}
+              example: []
+            isVaultSaved:
+              type: boolean
+              example: false
+            isSignupProcessComplete:
+              type: boolean
+              example: true
+            email:
+              type: string
+              example: "johndoe5@yopmail.com"
+            name:
+              type: string
+              example: "Shubham"
+            encryptedEncryptionKey:
+              type: array
+              items:
+                type: integer
+              example: [161, 69, 71, 77, 201, 66, 231, 232, 141, 140, 100]
+            PDKeyHash:
+              type: string
+              example: "07e15d27b0ff045269d1f9e50b2c049d9552b7a7eb87b0b64d37c61720a42b3a"
+            version:
+              type: string
+              example: "v1"
+            safleId:
+              type: string
+              example: "johndoe5"
+            linkedWallets:
+              type: array
+              items: {}
+              example: []
+            oldLinkedWallets:
+              type: array
+              items: {}
+              example: []
+            oldNames:
+              type: array
+              items: {}
+              example: []
+            safleIds:
+              type: array
+              items: {}
+              example: []
+            oldEmails:
+              type: array
+              items: {}
+              example: []
+            __v:
+              type: integer
+              example: 0
+    ForgotPasswordRequest:
+      type: object
+      properties:
+        safleId:
+          type: string
+          description: User's Safle ID
+        g-recaptcha-response:
+          type: string
+          description: reCAPTCHA response for bot protection
+        publicAddress:
+          type: string
+          description: User's public address
+      required:
+        - safleId
+        - g-recaptcha-response
+        - publicAddress
+    ForgotPasswordResponse:
+      type: object
+      properties:
+        safleId:
+          type: string
+        g-recaptcha-response:
+          type: string
+        publicAddress:
+          type: string
+    ResetPasswordRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          description: User's email address
+        hashedPassword:
+          type: string
+          description: New hashed password
+        encryptedEncryptionKey:
+          type: string
+          description: Encrypted encryption key for the user
+        PDKeyHash:
+          type: string
+          description: Hash of the password decryption key
+      required:
+        - email
+        - hashedPassword
+        - encryptedEncryptionKey
+        - PDKeyHash
+    ResetPasswordResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            message:
+              type: string
+              example: "Password updated successfully"
+    ChangePasswordRequest:
+      type: object
+      properties:
+        encryptedEncryptionKey:
+          type: array
+          items:
+            type: integer
+          description: Encrypted encryption key for the user
+          example: [1, 2, 3, 4, 5]
+        oldPDKeyHash:
+          type: string
+          description: Hash of the old password decryption key
+          example: qwertyuiop
+        hashedPassword:
+          type: string
+          description: New hashed password
+          example: dsafghjkjfhdgsaeSRDGFHGGSFDAsfdgfbdgfwrdgsf
+        newPDKeyHash:
+          type: string
+          description: Hash of the new password decryption key
+          example: sdfsgdhjgkhgdjfnsdbsa
+        safleId:
+          type: string
+          description: User's Safle ID
+          example: shubhamab
+      required:
+        - encryptedEncryptionKey
+        - oldPDKeyHash
+        - hashedPassword
+        - newPDKeyHash
+        - safleId
+    ChangePasswordResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            message:
+              type: string
+              example: "Password updated successfully"
+    RefreshTokenResponse:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          example: 200
+        data:
+          type: object
+          properties:
+            token:
+              type: string
+              example: "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6IjE5NzMxNWM5LWRlY2QtNDAxNS1iNjI3LTk4MTkxNTdjOGNjNyJ9.eyJ1c2VySWQiOiI2MzUwZjM5Y2NmYTE1NzA0M2UyZWUxZTciLCJuYW1lIjoiU2h1YmhhbSIsInNhZmxlSWQiOiJqb2huZG9lNSIsImVtYWlsIjoiam9obmRvZTVAeW9wbWFpbC5jb20iLCJpc1NhZmxlSWRSZWdpc3RlcmVkT25Qb2x5Z29uIjp0cnVlLCJpYXQiOjE2NjY2ODI2MDcsImV4cCI6MTY2OTI3NDYwNywiYXVkIjpbInBsYXRmb3JtIl0sImlzcyI6IkluYmxveCBuZXR3b3JrcyBwcml2YXRlIGxpbWl0ZWQiLCJzdWIiOiJkZXZlbG9wZXJrQGluYmxveC5tZSJ9.aFFHizs2KeSadsQyVbCM-vjfzm-koxjoQwWsoP1p7KEgVzF7X1CndIr1RmyAi0N9nca4HjxxdvTwnvLb2-Ifydt5KE4KETvZnrGPrqC8vAgmvrJiTaYCfl7Mlp--FPIvLnoN40wmZDUSvwhKs_VLoWs0JpAb6HbaF63ULhZgGJw"
+    PolygonDataRequest:
+      type: object
+      properties:
+        userId:
+          type: string
+          example: "aarrjjuunn"
+        transactionHash:
+          type: string
+          example: "0xc3aca542e566bcffc91bb93972b6835d36cca34b"
+        publicAddress:
+          type: string
+          example: "0x8102Eee36079E523840c57b45315e0571BFFEAC9"
+        registrarAddress:
+          type: string
+          example: "0x27be4B2a9F413b75EEb5f1B50088A9395661FDAb"
+        mainContractAddress:
+          type: string
+          example: "0x9c7757dc3b1aa479a03c92fb9e638ca033978088507ebd27ef42d12b32a0c7d7"
+        safleId:
+          type: string
+          example: "shubham"
+    SafleIdRegistrationStatusResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            safleIdRegistrationStatus:
+              type: string
+              example: "not_initiated"
+            safleIdRegistrationError:
+              type: string
+              nullable: true
+              example: null
+    UnauthorizedAcess:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          example: 401
+    LinkWalletRequest:
+      type: object
+      properties:
+        transactionHash:
+          type: string
+          description: The hash of the transaction related to wallet linking
+          example: "0xqwertyuiopasdfghjklzxcvbnm"
+        safleId:
+          type: string
+          description: The SafleID of the user
+          example: "tigrantest8"
+        publicAddress:
+          type: string
+          description: The public address of the wallet being linked
+          example: "0xqwertyuiopasdfghjklzxcvbnmzxcvbnmasdfghj"
+        chain:
+          type: string
+          description: The blockchain network on which the wallet is being linked (e.g., bsc, ethereum)
+          example: "bsc"
+    LinkWalletSuccessResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Data saved successfully."
+    UpdateWalletRequest:
+      type: object
+      properties:
+        transactionHash:
+          type: string
+          description: The hash of the transaction related to updating the wallet link
+          example: "0xqwertyuiopasdfghjklzxcvbnm"
+        oldPublicAddress:
+          type: string
+          description: The old public address of the wallet being updated
+          example: "0xqwertyuiopasdfghjklzxcvbnmzxcvbnmasdfghj"
+        newPublicAddress:
+          type: string
+          description: The new public address of the wallet
+          example: "0xqwertyuiopasdfghjklzxcvbnmzxcvbnmasdfghj"
+        chain:
+          type: string
+          description: The blockchain network on which the wallet is linked (e.g., bsc, ethereum)
+          example: "bsc"
+    UpdateWalletSuccessResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Data saved successfully."
+    DeleteUserSuccessResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            message:
+              type: string
+              example: "user deleted successfully"
+    ErrorResponse:
+      type: object
+      properties:
+        type:
+          type: string
+          example: "field-validation"
+        details:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+                example: field validation error name
+              message:
+                type: string
+                example: field validation error message
+    UpdateRecoverySetupRequest:
+      type: object
+      properties:
+        isRecoverySetup:
+          type: boolean
+          description: Flag to indicate if recovery setup is complete
+          example: true/false
+    CredentialsUpdateRequest:
+      type: object
+      properties:
+        encryptedEncryptionKey:
+          type: array
+          items:
+            type: integer
+          example: [1,2,6,4]
+        PDKeyHash:
+          type: string
+      required:
+        - encryptedEncryptionKey
+        - PDKeyHash
+    FieldValidationError:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          example: 400
+        type:
+          type: string
+          description: Error type
+          example: "field-validation"
+        details:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+                description: Field name with validation error
+                example: "field validation error name"
+              message:
+                type: string
+                description: Description of the validation error
+                example: "field validation error message"
+      required:
+        - type
+        - details          
+                
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

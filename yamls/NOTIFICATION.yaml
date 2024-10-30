@@ -1,0 +1,450 @@
+openapi: 3.0.0
+
+info:
+  title: Notification Service
+  description: API for managing enterprise and user notifications
+  version: 1.0.0
+
+# servers:
+#   - url: https://dev-notification.getsafle.com
+#     description: Development Server
+#   - url: https://test-notification.getsafle.com
+#     description: Test Server
+#   - url: https://stage-notification.getsafle.com
+#     description: Staging Server
+#   - url: https://b-notification.getsafle.com
+#     description: Production Server
+    
+paths:
+  /notification:
+    post:
+      summary: Save enterprise notification
+      description: Save an enterprise-level notification
+      operationId: saveEnterpriseNotification
+      tags: 
+        - Notification
+      servers:
+        - url: https://dev-notification.getsafle.com
+          description: Development Server
+        - url: https://test-notification.getsafle.com
+          description: Test Server
+        - url: https://stage-notification.getsafle.com
+          description: Staging Server
+        - url: https://b-notification.getsafle.com
+          description: Production Server  
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SaveNotificationRequest'
+      responses:
+        '201':
+          description: Notification created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SaveNotificationResponse'
+        '400':
+          description: Field validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FieldValidationError'
+                
+  /notification/user-notification:
+    post:
+      summary: Save user notification
+      description: Save a user-level notification
+      operationId: saveUserNotification
+      tags: 
+        - Notification
+      servers:
+        - url: https://dev-notification.getsafle.com
+          description: Development Server
+        - url: https://test-notification.getsafle.com
+          description: Test Server
+        - url: https://stage-notification.getsafle.com
+          description: Staging Server
+        - url: https://b-notification.getsafle.com
+          description: Production Server  
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SaveNotificationRequest'
+      responses:
+        '201':
+          description: Notification added successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SaveNotificationResponse'
+        '400':
+          description: Token already added or field validation error
+          content:
+            application/json:
+              examples:
+                fieldValidation:
+                  summary: "Field Validation"
+                  value:
+                    statusCode: 400
+                    type: "field-validation"
+                    details:
+                      name: "field validation error name"
+                      message: "field validation error message"
+                tokenAlreadyAdded:
+                  summary: "Token already added"
+                  value:
+                    statusCode: 400
+                    type: "field-validation"
+                    details:
+                      name: "addToken"
+                      message: "Token already added."              
+    
+    get:
+      summary: Get user notifications
+      description: Retrieve notifications for a user
+      operationId: getUserNotifications
+      tags: 
+        - Notification
+      servers:
+        - url: https://dev-notification.getsafle.com
+          description: Development Server
+        - url: https://test-notification.getsafle.com
+          description: Test Server
+        - url: https://stage-notification.getsafle.com
+          description: Staging Server
+        - url: https://b-notification.getsafle.com
+          description: Production Server  
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: limit
+          schema:
+            type: integer
+        - in: query
+          name: offset
+          schema:
+            type: integer
+        - in: query
+          name: status
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Notifications fetched successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetUserNotificationsResponse'
+        '400':
+          description: No notifications found or field validation error
+          content:
+            application/json:
+              examples:
+                fieldValidation:
+                  summary: "Field Validation"
+                  value:
+                    statusCode: 400
+                    type: "field-validation"
+                    details:
+                      name: "field validation error name"
+                      message: "field validation error message"
+                noNotificationFound:
+                  summary: "No Notification Found"
+                  value:
+                    statusCode: 400
+                    type: "field-validation"
+                    details:
+                      name: "notificationId"
+                      message: "No Notification Found"
+
+  /notification/send:
+    post:
+      summary: Send notifications
+      description: Send a notification to users
+      operationId: sendNotification
+      tags: 
+        - Notification
+      servers:
+        - url: https://dev-notification.getsafle.com
+          description: Development Server
+        - url: https://test-notification.getsafle.com
+          description: Test Server
+        - url: https://stage-notification.getsafle.com
+          description: Staging Server
+        - url: https://b-notification.getsafle.com
+          description: Production Server  
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendNotificationRequest'
+      responses:
+        '201':
+          description: Notification sent successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SendNotificationResponse'
+        '400':
+          description: Field validation error or notification not sent
+          content:
+            application/json:
+              examples:
+                fieldValidation:
+                  summary: "Field Validation"
+                  value:
+                    statusCode: 400
+                    type: "field-validation"
+                    details:
+                      name: "field validation error name"
+                      message: "field validation error message"
+                notificationNotSent:
+                  summary: "Notification not sent"
+                  value:
+                    statusCode: 400
+                    type: "field-validation"
+                    details:
+                      name: "notification"
+                      message: "Notification Not Sent"
+                
+  /notification/{notificationId}:
+    patch:
+      summary: Update notification
+      description: Update the details of a specific notification
+      operationId: updateNotification
+      tags: 
+        - Notification
+      servers:
+        - url: https://dev-notification.getsafle.com
+          description: Development Server
+        - url: https://test-notification.getsafle.com
+          description: Test Server
+        - url: https://stage-notification.getsafle.com
+          description: Staging Server
+        - url: https://b-notification.getsafle.com
+          description: Production Server  
+      parameters:
+        - name: notificationId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The ID of the notification to be updated
+      security:
+        - bearerAuth: []
+      responses:
+        '201':
+          description: Notification updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateNotificationResponse'
+        '400':
+          description: Field validation error or notification not found
+          content:
+            application/json:
+              examples:
+                fieldValidation:
+                  summary: "Field Validation"
+                  value:
+                    statusCode: 400
+                    type: "field-validation"
+                    details:
+                      name: "field validation error name"
+                      message: "field validation error message"
+                notificationNotFound:
+                  summary: "Notification Not Found"
+                  value:
+                    statusCode: 400
+                    type: "field-validation"
+                    details:
+                      name: "notificationId"
+                      message: "Notification Not Found"
+                  
+  /notification/user-notification/{notificationId}:
+    patch:
+      summary: Update user notification
+      description: Update user notifications with multiple comma-separated IDs
+      operationId: updateUserNotification
+      tags: 
+        - Notification
+      servers:
+        - url: https://dev-notification.getsafle.com
+          description: Development Server
+        - url: https://test-notification.getsafle.com
+          description: Test Server
+        - url: https://stage-notification.getsafle.com
+          description: Staging Server
+        - url: https://b-notification.getsafle.com
+          description: Production Server  
+      parameters:
+        - name: notificationId
+          in: path
+          required: true
+          schema:
+            type: string
+            description: Comma-separated list of notification IDs
+      security:
+        - bearerAuth: []
+      responses:
+        '201':
+          description: Notification updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateNotificationResponse'
+        '400':
+          description: Field validation error or notification not found
+          content:
+            application/json:
+              examples:
+                fieldValidation:
+                  summary: "Field Validation"
+                  value:
+                    statusCode: 400
+                    type: "field-validation"
+                    details:
+                      name: "field validation error name"
+                      message: "field validation error message"
+                notificationNotFound:
+                  summary: "Notification Not Found"
+                  value:
+                    statusCode: 400
+                    type: "field-validation"
+                    details:
+                      name: "notificationId"
+                      message: "Notification Not Found"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:          
+    SaveNotificationRequest:
+      type: object
+      properties:
+        data:
+          type: string
+        type:
+          type: string
+        status:
+          type: string
+      required:
+        - data
+        - type
+        - status
+
+    SaveNotificationResponse:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          example: 201
+        message:
+          type: string
+          example: Enterprise notification added successfully.
+          
+    GetUserNotificationsResponse:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          example: 200
+        data:
+          type: object
+          properties:
+            doc:
+              type: array
+              items:
+                properties:
+                  data:
+                    type: object
+                  status:
+                    type: string
+                    example: " "
+                  notificationId:
+                    type: string
+                    example: " "
+                  type:
+                    type: array
+                    items:
+                      type: string 
+                    example: []
+                      
+    SendNotificationRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          example: Safle Web Registration Token
+        body:
+          type: string
+          example: Body message of Lorem Ipsum of Safle
+        type:
+          type: array
+          items:
+            type: string
+          example: ["mobile", "web"]
+        deviceType:
+          type: string
+          example: "web or mobile"
+      required:
+        - title
+        - body
+        - type
+        
+    SendNotificationResponse:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          example: 201
+        message:
+          type: string
+          example: "User notification sent successfully."
+        
+    UpdateNotificationResponse:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          example: 201
+        message:
+          type: string
+          example: Notification updated successfully.    
+          
+    FieldValidationError:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          example: 400
+        type:
+          type: string
+          example: field-validation
+        details:
+          type: array
+          items:
+            type: object
+            properties:
+              message:
+                type: string
+                example: field validation error message
+              name:
+                type: string
+                example: field validation error name

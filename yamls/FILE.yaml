@@ -1,0 +1,232 @@
+openapi: 3.0.0
+
+info:
+  description: Safle File API 
+  version: "1.0.0"
+  title: File Service
+  
+# servers:
+#   - description: Devlopment Server
+#     url: https://dev-file.getsafle.com
+#   - description: Test Server
+#     url: https://test-file.getsafle.com
+#   - description: Staging Server
+#     url: https://stage-file.getsafle.com
+#   - description: Prodution Server
+#     url: https://b-file.getsafle.com
+
+paths:
+  /file:
+    get:
+      summary: Get file
+      operationId: getFile
+      description: Retrieve file from the service
+      tags:
+        - File
+      servers:
+        - description: Devlopment Server
+          url: https://dev-file.getsafle.com
+        - description: Test Server
+          url: https://test-file.getsafle.com
+        - description: Staging Server
+          url: https://stage-file.getsafle.com
+        - description: Prodution Server
+          url: https://b-file.getsafle.com
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: File successfully retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/getFileSuccessResponse"
+        '400':
+          description: Field validation errors
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FieldValidationError"
+                
+    post:
+      summary: Save File
+      operationId: saveFile
+      description: Save File to the Service
+      tags:
+        - File
+      servers:
+        - description: Devlopment Server
+          url: https://dev-file.getsafle.com
+        - description: Test Server
+          url: https://test-file.getsafle.com
+        - description: Staging Server
+          url: https://stage-file.getsafle.com
+        - description: Prodution Server
+          url: https://b-file.getsafle.com  
+      security: 
+        - bearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/postFileRequest"
+      responses:
+        '201':
+          description: File successfully saved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/postFileSuccessResponse"
+        '400':
+          description: Field validation errors
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FieldValidationError"
+    
+    patch:
+      summary: Update file
+      operationId: updateFile
+      description: Update File to the Service
+      tags:
+        - File
+      servers:
+        - description: Devlopment Server
+          url: https://dev-file.getsafle.com
+        - description: Test Server
+          url: https://test-file.getsafle.com
+        - description: Staging Server
+          url: https://stage-file.getsafle.com
+        - description: Prodution Server
+          url: https://b-file.getsafle.com  
+      security: 
+        - bearerAuth: []    
+      responses:
+        '201':
+          description: File successfully updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/patchFileSuccessResponse"
+                
+        '400':
+          description: Field validation errors
+          content:
+            application/json:
+              examples:
+                fieldValidation:
+                  summary: "Field Validation"
+                  value:
+                    statusCode: 400
+                    type: "field-validation"
+                    details:
+                      name: "field validation error name"
+                      message: "field validation error message"
+                noDataFound:
+                  summary: "No data found"
+                  value:
+                    statusCode: 400
+                    type: "field-validation"
+                    details:
+                      name: "user"
+                      message: "No data found"
+                fileNotFound:
+                  summary: "File not found"
+                  value:
+                    statusCode: 400
+                    type: "field-validation"
+                    details:
+                      name: "fileId"
+                      message: "No data found"
+
+components:
+  schemas:
+    getFileSuccessResponse:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          example: 200
+        data:
+          type: object
+          properties:
+            doc:
+              type: array
+              items:
+                type: object
+                properties:
+                  size:
+                    type: string
+                  imageUrl:
+                    type: string
+                  mimeType:
+                    type: string
+                  fileName:
+                    type: string
+    postFileRequest:
+      type: object
+      properties:
+        file: 
+          type: string
+          example: form-data
+        createdBy: 
+          type: string
+          example: form-data
+    postFileSuccessResponse:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          example: 201
+        data:
+          type: object
+          properties:
+            doc:
+              type: array
+              items:
+                type: object
+                properties:
+                  size:
+                    type: string
+                    example: ""
+                  imageUrl:
+                    type: string
+                    example: ""
+                  mimeType:
+                    type: string
+                    example: ""
+                  fileName:
+                    type: string
+                    example: ""
+    patchFileSuccessResponse:
+      type: object
+      properties:
+        statusCode: 
+          type: integer
+          example: 201
+        message: 
+          type: string
+          example: Data successfully deleted.
+    FieldValidationError:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          example: 400
+        type:
+          type: string
+          example: field-validation
+        details:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              message:
+                type: string
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

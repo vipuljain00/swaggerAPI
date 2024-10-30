@@ -1,0 +1,195 @@
+openapi: 3.0.0
+
+info:
+  description: API for managing Logs
+  version: "1.0.0"
+  title: Logging Service
+  
+servers:
+  - url: https://dev-logs.getsafle.com
+    description: Development server
+  - url: https://test-logs.getsafle.com
+    description: Testing server
+  - url: https://stage-logs.getsafle.com
+    description: Staging server
+  - url: https://logs.getsafle.com
+    description: Production server  
+
+paths:
+  /logs:
+    get:
+      summary: Get logs
+      description: Endpoint to get the logs
+      tags: 
+        - Logging
+      servers:
+        - url: https://dev-logs.getsafle.com
+          description: Development server
+        - url: https://test-logs.getsafle.com
+          description: Testing server
+        - url: https://stage-logs.getsafle.com
+          description: Staging server
+        - url: https://logs.getsafle.com
+          description: Production server   
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+          description: Page number for pagination. Min value is 1.
+        - name: limit
+          in: query
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+          description: Number of responses per page. Min value is 1, max is 100.
+      responses:
+        '200':
+          description: Logs retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LogsResponse'
+        '400':
+          description: Field validation or logs not found
+          content:
+            application/json:
+              examples:
+                fieldValidation:
+                  summary: "Field Validation"
+                  value:
+                    statusCode: 400
+                    type: "field-validation"
+                    details:
+                      name: "field validation error name"
+                      message: "field validation error message"
+                logsNotFound:
+                  summary: "logs of this user are not found"
+                  value:
+                    statusCode: 400
+                    type: "field-validation"
+                    details:
+                      name: "userId"
+                      message: "Logs for this user not found."
+
+    post:
+      summary: Save logs
+      description: Endpoint to save the logs
+      tags: 
+        - Logging
+      servers:
+        - url: https://dev-logs.getsafle.com
+          description: Development server
+        - url: https://test-logs.getsafle.com
+          description: Testing server
+        - url: https://stage-logs.getsafle.com
+          description: Staging server
+        - url: https://logs.getsafle.com
+          description: Production server   
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LogsRequest'
+      responses:
+        '200':
+          description: Logs stored successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '400':
+          description: Field validation errors
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FieldValidationError'
+    
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      
+  schemas:
+    LogsRequest:
+      type: object
+      properties:
+        logs:
+          type: array
+          items:
+            $ref: '#/components/schemas/Log'
+    Log:
+      type: object
+      properties:
+        action:
+          type: string
+          example: "add-account"
+        timestamp:
+          type: string
+          example: "9999999999999"
+        platform:
+          type: string
+          example: "web"
+        address:
+          type: string
+          example: "0x..."
+        storage:
+          type: string
+          example: "mobile"        
+        chain:
+          type: string
+          example: "ethereum"        
+    SuccessResponse:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          example: 200
+        doc:
+          type: object
+          properties:
+            message:
+              type: string
+              example: "Logs stored successfully."
+    LogsResponse:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          example: 200
+        doc:
+          type: array
+          items:
+            $ref: '#/components/schemas/Log'          
+
+    FieldValidationError:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          example: 400
+        type:
+          type: string
+          example: "field-validation"
+        details:
+          type: array
+          items:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "field validation error message" 
+              name:
+                type: string
+                example: "field validation error name"  
+                

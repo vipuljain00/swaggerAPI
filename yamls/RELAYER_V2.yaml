@@ -1,0 +1,501 @@
+openapi: 3.0.0
+
+info:
+  title: Relayer Service v2
+  description: API documentation for the Relayer Service v2
+  version: 1.0.0
+  
+# servers:
+#   - url: https://dev-relayer-queue.getsafle.com
+#     description: Development server
+#   - url: https://test-relayer-queue.getsafle.com
+#     description: Testing server
+#   - url: https://stage-relayer-queue.getsafle.com
+#     description: Staging server
+#   - url: https://b-relayer-queue.getsafle.com
+#     description: Production server
+    
+paths:
+  /set-safleid:
+    post:
+      tags:
+        - RelayerV2
+      servers:
+        - url: https://dev-relayer-queue.getsafle.com
+          description: Development server
+        - url: https://test-relayer-queue.getsafle.com
+          description: Testing server
+        - url: https://stage-relayer-queue.getsafle.com
+          description: Staging server
+        - url: https://b-relayer-queue.getsafle.com
+          description: Production server  
+      summary: Register a SafleId with the public address
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SafleIdRequest'
+      responses:
+        '201':
+          description: Request sent to queue
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+        '400':
+          description: Field validation error
+          content:
+            application/json:
+              examples:
+                fieldValidation:
+                  summary: "Field Validation"
+                  value:
+                    statusCode: 400
+                    type: "field-validation"
+                    details:
+                      name: "field validation error name"
+                      message: "field validation error message"
+                recoveryFailedForSignedData:
+                  summary: "The recovery fails for the signed data"
+                  value:
+                    statusCode: 400
+                    type: "field-validation"
+                    details:
+                      name: "signedData"
+                      message: "Signed data doesn't belong to the provided public address."
+                safleIdRegisterationPaused:
+                  summary: "The safleId registration is paused"
+                  value:
+                    statusCode: 400
+                    type: "field-validation"
+                    details:
+                      name: "SafleId"
+                      message: "SafleId registration is currently on hold"
+                jsonrpcFacingDowntime:
+                  summary: "JSON RPC is facing downtime"
+                  value:
+                    statusCode: 400
+                    type: "field-validation"
+                    details:
+                      name: "JSON RPC"
+                      message: "Invalid JSON RPC error."
+                transactionThrowsnAnError:
+                  summary: "The address is already registered to another safleId"
+                  value:
+                    statusCode: 400
+                    type: "field-validation"
+                    details:
+                      name: "address"
+                      message: "This address is already mapped to another safleId"
+                alreadyRegisteredToAnotherSafleId:
+                  summary: "The transaction throws an error"
+                  value:
+                    statusCode: 400
+                    type: "field-validation"
+                    details:
+                      name: "address & safleId"
+                      message: error message
+
+  /update-safleid:
+    post:
+      tags:
+        - RelayerV2
+      servers:
+        - url: https://dev-relayer-queue.getsafle.com
+          description: Development server
+        - url: https://test-relayer-queue.getsafle.com
+          description: Testing server
+        - url: https://stage-relayer-queue.getsafle.com
+          description: Staging server
+        - url: https://b-relayer-queue.getsafle.com
+          description: Production server  
+      summary: Update the SafleId registered with the public address
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateSafleIdRequest'
+      responses:
+        '201':
+          description: Request sent to queue
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+        '400':
+          description: Field validation error
+          content:
+            application/json:
+              examples:
+                fieldValidation:
+                  summary: "Field Validation"
+                  value:
+                    statusCode: 400
+                    type: "field-validation"
+                    details:
+                      name: "field validation error name"
+                      message: "field validation error message"
+                recoveryFailsForTheSigneddata:
+                  summary: "The recovery fails for the signed data"
+                  value:
+                    statusCode: 400
+                    type: "field-validation"
+                    details:
+                      name: "signedData"
+                      message: "Signed data doesn't belong to the provided public address."
+                SafleIdupdatedMoreThanTwice:
+                  summary: "SafleId has been updated more than twice"
+                  value:
+                    statusCode: 400
+                    type: "field-validation"
+                    details:
+                      name: "safleId"
+                      message: "You cannot update safleId more than twice"
+                jsonrpcFacingDowntime:
+                  summary: "JSON RPC is facing downtime"
+                  value:
+                    statusCode: 400
+                    type: "field-validation"
+                    details:
+                      name: "JSON RPC"
+                      message: "Invalid JSON RPC error."
+                oldSafleIdNotRegisteredToAddress:
+                  summary: "The old safleId passed is not registered to the address"
+                  value:
+                    statusCode: 400
+                    type: "field-validation"
+                    details:
+                      name: "safleId"
+                      message: "The previous safleId passed is not mapped to your address"
+                newSafleIdPassedAlreadyRegisteredToAnotherAddress:
+                  summary: "The new safleId passed is already registered to another address"
+                  value:
+                    statusCode: 400
+                    type: "field-validation"
+                    details:
+                      name: "safleId"
+                      message: "The new safleId is already mapped to another address"
+                SafleIdRegistrationCurrentlyPaused:
+                  summary: "SafleId registration is currently paused"
+                  value:
+                    statusCode: 400
+                    type: "field-validation"
+                    details:
+                      name: "safleId"
+                      message: "safleId registration is currently paused"
+                transactionThrowsError:
+                  summary: "The transaction throws an error"
+                  value:
+                    statusCode: 400
+                    type: "field-validation"
+                    details:
+                      name: "address & safleId"
+                      message: "error message"
+                addressAlreadyTaken:
+                  summary: "If address is already taken"
+                  value:
+                    statusCode: 400
+                    type: "field-validation"
+                    details:
+                      name: "address"
+                      message: "This address is already mapped to another safleId"
+
+  /register-other-coin:
+    post:
+      tags:
+        - RelayerV2
+      servers:
+        - url: https://dev-relayer-queue.getsafle.com
+          description: Development server
+        - url: https://test-relayer-queue.getsafle.com
+          description: Testing server
+        - url: https://stage-relayer-queue.getsafle.com
+          description: Staging server
+        - url: https://b-relayer-queue.getsafle.com
+          description: Production server  
+      summary: Register other coin address with SafleId
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: 
+              $ref: '#/components/schemas/RegisterOtherCoinRequest'
+      responses:
+        '201':
+          description: Request sent to queue
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+        '400':
+          description: Field validation error
+          content:
+            application/json:
+              examples:
+                fieldValidation:
+                  summary: "Field Validation"
+                  value:
+                    statusCode: 400
+                    type: "field-validation"
+                    details:
+                      name: "field validation error name"
+                      message: "field validation error message"
+                recoveryFailsForTheSigneddata:
+                  summary: "The recovery fails for the signed data"
+                  value:
+                    statusCode: 400
+                    type: "field-validation"
+                    details:
+                      name: "signedData"
+                      message: "Signed data doesn't belong to the provided public address."
+                safleIdPassedNotMappedToUserAddress:
+                  summary: "The safleId passed is not mapped to the user’s address"
+                  value:
+                    statusCode: 400
+                    type: "field-validation"
+                    details:
+                      name: "safleId"
+                      message: "The safleId passed is not mapped to your address"
+                jsonrpcFacingDowntime:
+                  summary: "JSON RPC is facing downtime"
+                  value:
+                    statusCode: 400
+                    type: "field-validation"
+                    details:
+                      name: "JSON RPC"
+                      message: "Invalid JSON RPC error."
+                coinForWhichTheAddressBeingRegisteredNotMappedByRelayer:
+                  summary: "The coin for which the address is being registered is not mapped by the relayer"
+                  value:
+                    statusCode: 400
+                    type: "field-validation"
+                    details:
+                      name: "coinId"
+                      message: "Please map this coin first before registration"
+                coinAddressAlreadyRegistered:
+                  summary: "The coin address is already registered"
+                  value:
+                    statusCode: 400
+                    type: "field-validation"
+                    details:
+                      name: "coinAddress"
+                      message: "This coin is already mapped."
+                coinAddressPassedAlreadyMappedToAnotherSafleId:
+                  summary: "The coin address passed is already mapped to another safleId"
+                  value:
+                    statusCode: 400
+                    type: "field-validation"
+                    details:
+                      name: "address"
+                      message: "This address is already mapped to another safleId"
+
+  /update-other-coin:
+    post:
+      tags:
+        - RelayerV2
+      servers:
+        - url: https://dev-relayer-queue.getsafle.com
+          description: Development server
+        - url: https://test-relayer-queue.getsafle.com
+          description: Testing server
+        - url: https://stage-relayer-queue.getsafle.com
+          description: Staging server
+        - url: https://b-relayer-queue.getsafle.com
+          description: Production server  
+      summary: Update the registered other coin address
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateOtherCoinRequest'
+      responses:
+        '201':
+          description: Request sent to queue
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+        '400':
+          description: Field validation error
+          content:
+            application/json:
+              examples:
+                fieldValidation:
+                  summary: "Field Validation"
+                  value:
+                    statusCode: 400
+                    type: "field-validation"
+                    details:
+                      name: "field validation error name"
+                      message: "field validation error message"
+                recoveryFailsForTheSigneddata:
+                  summary: "The recovery fails for the signed data"
+                  value:
+                    statusCode: 400
+                    type: "field-validation"
+                    details:
+                      name: "signedData"
+                      message: "Signed data doesn't belong to the provided public address."
+                safleIdPassedNotMappedToUserAddress:
+                  summary: "The safleId passed is not mapped to the user’s address"
+                  value:
+                    statusCode: 400
+                    type: "field-validation"
+                    details:
+                      name: "safleId"
+                      message: "The safleId passed is not mapped to your address"
+                coinForWhichTheAddressBeingRegisteredNotMappedByRelayer:
+                  summary: "The coin for which the address is being registered is not mapped by the relayer"
+                  value:
+                    statusCode: 400
+                    type: "field-validation"
+                    details:
+                      name: "coinId"
+                      message: "Please map this coin first before registration"
+                newCoinAddressAlreadyRegistered:
+                  summary: "The new coin address is already registered"
+                  value:
+                    statusCode: 400
+                    type: "field-validation"
+                    details:
+                      name: "newCoinAddress"
+                      message: "This coin is already mapped."
+                oldCoinAddressAlreadyRegistered:
+                  summary: "The old coin address is not registered"
+                  value:
+                    statusCode: 400
+                    type: "field-validation"
+                    details:
+                      name: "oldCoinAddress"
+                      message: "The old coin address passed is invalid."
+                transactionThrowsError:
+                  summary: "The transaction throws an error"
+                  value:
+                    statusCode: 400
+                    type: "field-validation"
+                    details:
+                      name: "address & safleId"
+                      message: error message  
+  
+components:
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    
+  schemas:
+  
+    SafleIdRequest:
+      type: object
+      properties:
+        userAdd:
+          type: string
+          description: The user's public address
+          example: "0x21645363CCF730E42Cb9b430F742420f1Ed612B0"
+        signedData:
+          $ref: "#/components/schemas/signedData"
+              
+    UpdateSafleIdRequest:
+      type: object
+      properties:
+        userAdd:
+          type: string
+          example: "0x21645363CCF730E42Cb9b430F742420f1Ed612B0"
+        previousSafleId:
+          type: string
+          example: "safleId1"
+        newSafleId:
+          type: string
+          example: "safleId2"
+        signedData:
+          $ref: '#/components/schemas/signedData'
+              
+    Response:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          example: 201
+        message:
+          type: string
+          example: Request sent to queue
+          
+    RegisterOtherCoinRequest:
+      type: object
+      properties:
+        userAdd:
+          type: string
+          example: "0x21645363CCF730E42Cb9b430F742420f1Ed612B0"
+        safleId:
+          type: string
+          example: "shubh59"
+        coinAddress:
+          type: string
+          example: "0x21645363CCF730E42Cb9b430F742420f1Ed612B0"
+        coinId:
+          type: string
+          example: "9007"
+        chain:
+          type: string
+          example: "bsc"
+        signedData:
+          $ref: "#/components/schemas/signedData"
+          
+    UpdateOtherCoinRequest:
+      type: object
+      properties:
+        userAdd:
+          type: string
+          example: "0x21645363CCF730E42Cb9b430F742420f1Ed612B0"
+        safleId:
+          type: string
+          example: "shubh59"
+        oldCoinAddress:
+          type: string
+          example: "0x21645363CCF730E42Cb9b430F742420f1Ed612B0"
+        newCoinAddress:
+          type: string
+          example: "0x42nsdfgfsg..."
+        coinId:
+          type: string
+          example: "9007"
+        chain:
+          type: string
+          example: "bsc"
+        signedData:
+          $ref: "#/components/schemas/signedData"
+          
+    signedData:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "0x21645363CCF730E42Cb9b430F742420f1Ed612B0"
+        messageHash:
+          type: string
+          example: "0xbe2d1a2a9964337e9a8c8a762c205f299a7fdcd269428a9c9bd000dee33d759a"
+        v:
+          type: string
+          example: "0x1c"
+        r:
+          type: string
+          example: "0x649bcef7c8940ca43855ee7b9da522da23c0b4bb338493bdd9675ffb92d2c817"
+        s:
+          type: string
+          example: "0x174aea12cf47752c0c88d68ea911a6ef464a5eb3e09bb033b6143d7b46e3947e"
+        signature:
+          type: string
+          example: "0x649bcef7c8940ca43855ee7b9da522da23c0b4bb338493bdd9675ffb92d2c817174aea12cf47752c0c88d68ea911a6ef464a5eb3e09bb033b6143d7b46e3947e1c"

@@ -1,0 +1,473 @@
+openapi: 3.0.0
+
+info:
+  title: Key Management Service
+  description: API for managing vaults and logs
+  version: 1.0.0
+  
+# servers:
+#   - url: https://dev-key.getsafle.com
+#     description: Development Server
+#   - url: https://test-key.getsafle.com
+#     description: Test Server
+#   - url: https://stage-key.getsafle.com
+#     description: Staging Server
+#   - url: https://b-key.getsafle.com
+#     description: Production Server
+
+paths:
+  /key:
+    post:
+      summary: Save vault
+      description: Store a user's vault data
+      operationId: saveVault
+      tags: 
+        - Key Management
+      servers:
+        - url: https://dev-key.getsafle.com
+          description: Development Server
+        - url: https://test-key.getsafle.com
+          description: Test Server
+        - url: https://stage-key.getsafle.com
+          description: Staging Server
+        - url: https://b-key.getsafle.com
+          description: Production Server  
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VaultRequestBody'
+      security:
+        - bearerAuth: []
+      responses:
+        '201':
+          description: Vault stored successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '400':
+          description: Field validation error or vault already saved
+          content:
+            application/json:
+              examples:
+                fieldValidation:
+                  summary: "Field Validation"
+                  value:
+                    statusCode: 400
+                    type: "field-validation"
+                    details:
+                      name: "field validation error name"
+                      message: "field validation error message"
+                vaultAlreadySaved:
+                  summary: "Vault already saved"
+                  value:
+                    statusCode: 400
+                    type: "field-validation"
+                    details:
+                      name: "userId"
+                      message: "Vault of this user is already stored"
+
+
+    get:
+      summary: Get vault
+      description: Retrieve a user's vault data
+      operationId: getVault
+      tags: 
+        - Key Management
+      servers:
+        - url: https://dev-key.getsafle.com
+          description: Development Server
+        - url: https://test-key.getsafle.com
+          description: Test Server
+        - url: https://stage-key.getsafle.com
+          description: Staging Server
+        - url: https://b-key.getsafle.com
+          description: Production Server  
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Vault retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetVaultSuccessResponse'
+        '400':
+          description: Field validation error or vault not found
+          content:
+            application/json:
+              examples:
+                fieldValidation:
+                  summary: "Field Validation"
+                  value:
+                    statusCode: 400
+                    type: "field-validation"
+                    details:
+                      name: "field validation error name"
+                      message: "field validation error message"
+                vaultNotFound:
+                  summary: "Vault not found"
+                  value:
+                    statusCode: 400
+                    type: "field-validation"
+                    details:
+                      name: "userId"
+                      message: "Vault of this user is not stored"
+
+    patch:
+      summary: Update vault
+      description: Update a user's vault data
+      operationId: updateVault
+      tags: 
+        - Key Management
+      servers:
+        - url: https://dev-key.getsafle.com
+          description: Development Server
+        - url: https://test-key.getsafle.com
+          description: Test Server
+        - url: https://stage-key.getsafle.com
+          description: Staging Server
+        - url: https://b-key.getsafle.com
+          description: Production Server  
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VaultRequestBody'
+      security:
+        - bearerAuth: []
+      responses:
+        '201':
+          description: Vault updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/patchSuccessResponse'
+        '400':
+          description: Field validation error or vault not found
+          content:
+            application/json:
+              examples:
+                fieldValidation:
+                  summary: "Field Validation"
+                  value:
+                    statusCode: 400
+                    type: "field-validation"
+                    details:
+                      name: "field validation error name"
+                      message: "field validation error message"
+                vaultNotFound:
+                  summary: "Vault not found"
+                  value:
+                    statusCode: 400
+                    type: "field-validation"
+                    details:
+                      name: "userId"
+                      message: "User not found"
+
+    delete:
+      summary: Delete vault
+      description: Delete a user's vault data
+      operationId: deleteVault
+      tags: 
+        - Key Management
+      servers:
+        - url: https://dev-key.getsafle.com
+          description: Development Server
+        - url: https://test-key.getsafle.com
+          description: Test Server
+        - url: https://stage-key.getsafle.com
+          description: Staging Server
+        - url: https://b-key.getsafle.com
+          description: Production Server  
+      security:
+        - bearerAuth: []
+      responses:
+        '201':
+          description: Vault deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteSuccessResponse'
+        '400':
+          description: Field validation error or vault not found
+          content:
+            application/json:
+              examples:
+                fieldValidation:
+                  summary: "Field Validation"
+                  value:
+                    statusCode: 400
+                    type: "field-validation"
+                    details:
+                      name: "field validation error name"
+                      message: "field validation error message"
+                vaultNotFound:
+                  summary: "Vault not found"
+                  value:
+                    statusCode: 400
+                    type: "field-validation"
+                    details:
+                      name: "userId"
+                      message: "User not found"
+                  
+  /store-logs:
+    post:
+      summary: Save logs
+      description: Store logs related to the vault
+      operationId: saveLogs
+      tags: 
+        - Key Management
+      servers:
+        - url: https://dev-key.getsafle.com
+          description: Development Server
+        - url: https://test-key.getsafle.com
+          description: Test Server
+        - url: https://stage-key.getsafle.com
+          description: Staging Server
+        - url: https://b-key.getsafle.com
+          description: Production Server  
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LogsRequestBody'
+      security:
+        - bearerAuth: []
+      responses:
+        '201':
+          description: Logs stored successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StoreLogsSuccessResponse'
+        '400':
+          description: Field validation error or vault already saved
+          content:
+            application/json:
+              examples:
+                fieldValidation:
+                  summary: "Field Validation"
+                  value:
+                    statusCode: 400
+                    type: "field-validation"
+                    details:
+                      name: "field validation error name"
+                      message: "field validation error message"
+                vaultAlreadySaved:
+                  summary: "Vault already saved"
+                  value:
+                    statusCode: 400
+                    type: "field-validation"
+                    details:
+                      name: "userId"
+                      message: "Vault of this user is already stored"
+
+  /retrieve-logs:
+    get:
+      summary: Retrieve logs
+      description: Retrieve stored logs related to the vault
+      operationId: getLogs
+      tags: 
+        - Key Management
+      servers:
+        - url: https://dev-key.getsafle.com
+          description: Development Server
+        - url: https://test-key.getsafle.com
+          description: Test Server
+        - url: https://stage-key.getsafle.com
+          description: Staging Server
+        - url: https://b-key.getsafle.com
+          description: Production Server  
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Logs retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetLogsSuccessResponse'
+        '400':
+          description: Field validation error or vault not found
+          content:
+            application/json:
+              examples:
+                fieldValidation:
+                  summary: "Field Validation"
+                  value:
+                    statusCode: 400
+                    type: "field-validation"
+                    details:
+                      name: "field validation error name"
+                      message: "field validation error message"
+                vaultNotFound:
+                  summary: "Vault not found"
+                  value:
+                    statusCode: 400
+                    type: "field-validation"
+                    details:
+                      name: "userId"
+                      message: "Vault of this user is not stored."              
+  
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  
+  schemas:
+    VaultRequestBody:
+      type: object
+      properties:
+        vault:
+          type: string
+      example:
+        vault: "encrypted_vault_data"
+    SuccessResponse:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          example: 201
+        message:
+          type: string
+          example: Vault stored successfully.
+    GetVaultSuccessResponse:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          example: 200
+        data:
+          type: object
+          properties:
+            doc:
+              type: array
+              items:
+                type: object
+                properties:
+                  vault:
+                    type: string
+                  userId:
+                    type: string
+          example:
+            doc:
+              - vault: "encrypted_vault_data"
+                userId: "user_123"   
+    patchSuccessResponse:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          example: 201
+        message:
+          type: string
+          example: "Vault instance updated successfully."
+    DeleteSuccessResponse:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          example: 201
+        message:
+          type: string
+          example: Vault instance deleted successfully..
+    LogsRequestBody:
+      type: object
+      properties:
+        logs:
+          type: array
+          items:
+            type: string
+      example:
+        logs: ["log_entry_1", "log_entry_2"]
+    StoreLogsSuccessResponse:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          example: 201
+        message:
+          type: string
+          example: Logs stored successfully. 
+    GetLogsSuccessResponse:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          example: 200
+        data:
+          type: array
+          items:
+            type: string
+          example:
+            - "log_entry_1"
+            - "log_entry_2"
+    # FieldValidationError:
+    #   type: object
+    #   properties:
+    #     statusCode:
+    #       type: integer
+    #       example: 400
+    #     type:
+    #       type: string
+    #       example: field-validation
+    #     details:
+    #       type: array
+    #       items:
+    #         type: object
+    #         properties:
+    #           message:
+    #             type: string
+    #             example: field validation error message
+    #           name:
+    #             type: string
+    #             example: field validation error name
+    # VaultAlreadySavedError:
+    #   type: object
+    #   properties:
+    #     statusCode:
+    #       type: integer
+    #       example: 400
+    #     type:
+    #       type: string
+    #       example: field-validation
+    #     details:
+    #       type: array
+    #       items:
+    #         type: object
+    #         properties:
+    #           name:
+    #             type: string
+    #           message:
+    #             type: string
+    #       example:
+    #         - name: "userId"
+    #           message: "Vault of this user is already stored."
+    # VaultNotFoundError:
+    #   type: object
+    #   properties:
+    #     statusCode:
+    #       type: integer
+    #       example: 400
+    #     type:
+    #       type: string
+    #       example: field-validation
+    #     details:
+    #       type: array
+    #       items:
+    #         type: object
+    #         properties:
+    #           name:
+    #             type: string
+    #           message:
+    #             type: string
+    #       example:
+    #         - name: "userId"
+    #           message: "Vault of this user is not stored."

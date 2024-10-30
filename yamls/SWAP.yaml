@@ -1,0 +1,372 @@
+openapi: 3.0.0
+
+info:
+  description: Safle Swap API (Safle-Dev)
+  version: "1.0.0"
+  title: Swap Service
+
+# servers:
+#   - description: Devlopment Environment
+#     url: https://dev-swap.getsafle.com
+#   - description: Test Environment
+#     url: https://test-swap.getsafle.com
+#   - description: Staging Environment
+#     url: https://stage-swap.getsafle.com
+#   - description: Production Environment
+#     url:  https://b-swap.getsafle.com
+    
+paths:
+  /token-swap/transaction:
+    get:
+      summary: Get swap transaction details
+      description: Fetch details of a swap transaction.
+      operationId: getSwapTransaction
+      security:
+        - bearerAuth: []
+      tags:
+        - Swap
+      servers:
+        - description: Devlopment Environment
+          url: https://dev-swap.getsafle.com
+        - description: Test Environment
+          url: https://test-swap.getsafle.com
+        - description: Staging Environment
+          url: https://stage-swap.getsafle.com
+        - description: Production Environment
+          url:  https://b-swap.getsafle.com  
+      parameters:
+        - in: query
+          name: address
+          schema:
+            type: string
+          required: false
+          description: The public address of the user.
+        - in: query
+          name: network
+          schema:
+            type: string
+            enum: [ethereum, polygon, binance-smart-chain]
+          required: true
+          description: The blockchain network.
+      responses:
+        '201':
+          description: Successfully fetched transaction details.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SwapTransactionResponse'
+        '400':
+          description: Field validation error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FieldValidationError'
+    
+    post:
+      summary: Save swap transaction
+      description: Save a new swap transaction.
+      operationId: saveSwapTransaction
+      security:
+        - bearerAuth: []
+      tags:
+        - Swap
+      servers:
+        - description: Devlopment Environment
+          url: https://dev-swap.getsafle.com
+        - description: Test Environment
+          url: https://test-swap.getsafle.com
+        - description: Staging Environment
+          url: https://stage-swap.getsafle.com
+        - description: Production Environment
+          url:  https://b-swap.getsafle.com  
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SaveSwapTransactionRequest'
+      responses:
+        '201':
+          description: Swap transaction added successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SaveSwapTransactionResponse'
+        '400':
+          description: Field validation error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FieldValidationError'
+    
+    patch:
+      summary: Update swap transaction
+      description: Update existing swap transaction.
+      operationId: updateSwapTransaction
+      security:
+        - bearerAuth: []
+      tags:
+        - Swap
+      servers:
+        - description: Devlopment Environment
+          url: https://dev-swap.getsafle.com
+        - description: Test Environment
+          url: https://test-swap.getsafle.com
+        - description: Staging Environment
+          url: https://stage-swap.getsafle.com
+        - description: Production Environment
+          url:  https://b-swap.getsafle.com  
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/updateSwapTransactionRequest'
+      responses:
+        '201':
+          description: User Transaction updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/userTransactionUpdate'
+    
+        '400': 
+          description: Field validation error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FieldValidationError'
+    
+          
+      
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    SwapTransactionResponse:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          example: 201
+        doc:
+          type: object
+          properties:
+            data:
+              type: array
+              items:
+                $ref: '#/components/schemas/TransactionDetail'
+                
+    TransactionDetail:
+      type: object
+      properties:
+        fromToken:
+          type: string
+          description: The token being swapped from.
+          example: "0x0e362a71CBd6D1301365A0E6ff29f1D290A486Ec"
+        toToken:
+          type: string
+          description: The token being swapped to.
+          example: "0x0e362a71CBd6D1301365A0E6ff29f1D290A486Ec"
+        fromQty:
+          type: number
+          description: Quantity of the fromToken.
+          example: 2
+        toQty:
+          type: number
+          description: Quantity of the toToken.
+          example: 3
+        publicAddress:
+          type: string
+          description: Public address of the user.
+          example: "0x0e362a71CBd6D1301365A0E6ff29f1D290A486Ec"
+        txReceipt:
+          type: object
+          description: Transaction receipt details.
+          properties:
+            recieved:
+              type: string
+              example: "success"
+        txHash:
+          type: string
+          description: Transaction hash.
+          example: "0x0e362a71CBd6D1301365A0E6ff29f1D290A486Ec"
+        fromTokenImage:
+          type: string
+          description: Image link of the fromToken.
+          example: "Joi.string().required()"
+        toTokenImage:
+          type: string
+          description: Image link of the toToken.
+          example: "Joi.string().required()"
+        fromTokenSymbol:
+          type: string
+          description: Symbol of the fromToken.
+          example: "ETH"
+        toTokenSymbol:
+          type: string
+          description: Symbol of the toToken.
+          example: "MATIC"
+        status:
+          type: string
+          description: Transaction status.
+          example: "failed"
+        gasFee:
+          type: string
+          description: The gas fee used for the transaction.
+        linkToBlockExplorer:
+          type: string
+          description: Link to view transaction on a block explorer.
+          example: "https://etherscan.io/tx/0x..."
+        dex:
+          type: string
+          description: DEX used for the transaction.
+          example: "uniswap"
+        slippage:
+          type: string
+          description: Slippage percentage for the transaction.
+          example: "2"
+        network:
+          type: string
+          description: The network used for the transaction.
+          example: "ethereum"
+        gasFeeUsed:
+          type: integer
+          description: Gas fee used in the transaction.
+          example: 300000
+        timestamp:
+          type: string
+          description: The timestamp of the transaction.
+          
+    FieldValidationError:
+      type: object
+      properties:
+        statusCode: 
+          type: integer
+          example: 400
+        type:
+          type: string
+          example: "field-validation"
+        details:
+          type: array
+          items:
+            $ref: '#/components/schemas/ErrorDetails'
+    
+    ErrorDetails:
+      type: object
+      properties:
+        name:
+          type: string
+          example: field validation error name
+        message:
+          type: string
+          example: field validation error message
+          
+    SaveSwapTransactionRequest:
+      type: object
+      properties:
+        fromToken:
+          type: string
+          description: The token being swapped from.
+          example: "0x0e362a71CBd6D1301365A0E6ff29f1D290A486Ec"
+        toToken:
+          type: string
+          description: The token being swapped to.
+          example: "0x0e362a71CBd6D1301365A0E6ff29f1D290A486Ec"
+        fromQty:
+          type: string
+          description: Quantity of the fromToken.
+          example: "2"
+        toQty:
+          type: string
+          description: Quantity of the toToken.
+          example: "3"
+        publicAddress:
+          type: string
+          description: Public address of the user.
+          example: "0x0e362a71CBd6D1301365A0E6ff29f1D290A486Ec"
+        fromTokenImage:
+          type: string
+          description: Image link of the fromToken.
+          example: "Joi.string().required()"
+        toTokenImage:
+          type: string
+          description: Image link of the toToken.
+          example: "Joi.string().required()"
+        fromTokenSymbol:
+          type: string
+          description: Symbol of the fromToken.
+          example: "ETH"
+        toTokenSymbol:
+          type: string
+          description: Symbol of the toToken.
+          example: "MATIC"
+        status:
+          type: string
+          description: Transaction status.
+          example: "failed"
+        dex:
+          type: string
+          description: DEX used for the transaction.
+          example: "1inch"
+        network:
+          type: string
+          description: The network used for the transaction.
+          example: "ethereum"
+        slippage:
+          type: string
+          description: Slippage percentage for the transaction.
+          example: "1"
+          
+    SaveSwapTransactionResponse:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          example: 201
+        data:
+          type: object
+          properties:
+            message: 
+              type: string
+              example: "Swap transaction added successfully."
+            transactionId: 
+              type: string
+              example: "63f3a19d0e902c0012c7b427"
+              
+    updateSwapTransactionRequest:
+      type: object
+      properties:
+        txHash:
+          type: string
+          example: "0x0e362a71CBd6D1301365A0E6ff29f1D290A486Ec"
+        linkToBlockExplorer:
+          type: string
+          example: "Joi.string().required()"
+        gasFee:
+          type: number
+          example: 1.2
+        txReceipt: 
+          type: object
+        gasFeeUsd:
+          type: integer
+          example: 1
+        status:
+          type: string
+          example: "pending"
+        transactionId:
+          type: string
+          example:  "63f3a19d0e902c0012c7b427"
+          
+    userTransactionUpdate:
+      type: object
+      properties: 
+        statuscode:
+          type: integer
+          example: 201
+        message:
+          type: string
+          example: "User Transaction updated successfully"

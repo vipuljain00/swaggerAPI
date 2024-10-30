@@ -1,0 +1,253 @@
+openapi: 3.0.0
+
+info:
+  title: Email Service API
+  version: 1.0.0
+  description: API for sending and managing email communications.
+
+# servers:
+#   - url:  https://b-email.getsafle.com
+#     description: Production server
+#   - url: https://stage-email.getsafle.com
+#     description: Staging server
+#   - url: https://test-email.getsafle.com
+#     description: Testing Server
+#   - url: https://dev-email.getsafle.com
+#     description: Development Server
+
+paths:
+  /email/send:
+    post:
+      summary: Send Email verification link
+      tags:
+        - Email
+      servers:
+        - url: https://dev-email.getsafle.com
+          description: Development Server  
+        - url: https://test-email.getsafle.com
+          description: Testing Server  
+        - url: https://stage-email.getsafle.com
+          description: Staging server
+        - url:  https://b-email.getsafle.com
+          description: Production server  
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendEmailRequest'
+      responses:
+        '200':
+          description: Email sent successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SendEmailResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FieldValidationError'
+      security:
+        - bearerAuth: []
+
+  /custom-email/send:
+    post:
+      summary: Send custom email
+      description: Sends a custom email to the user using a specified email template and dynamic data.
+      tags:
+        - Email
+      servers:
+        - url: https://dev-email.getsafle.com
+          description: Development Server  
+        - url: https://test-email.getsafle.com
+          description: Testing Server  
+        - url: https://stage-email.getsafle.com
+          description: Staging server
+        - url:  https://b-email.getsafle.com
+          description: Production server  
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendCustomEmailRequest'
+      responses:
+        '200':
+          description: Email sent successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SendCustomEmailResponse'
+        '400':
+          description: Field validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FieldValidationError'
+
+  /otp/send:
+    post:
+      summary: Send otp email
+      description: Sends an OTP email to the user using a specified email template.
+      tags:
+        - Email
+      servers:
+        - url: https://dev-email.getsafle.com
+          description: Development Server  
+        - url: https://test-email.getsafle.com
+          description: Testing Server  
+        - url: https://stage-email.getsafle.com
+          description: Staging server
+        - url:  https://b-email.getsafle.com
+          description: Production server  
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendOtpEmailRequest'
+      responses:
+        '200':
+          description: Email sent successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SendOtpEmailResponse'
+        '400':
+          description: Field validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FieldValidationError'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    SendEmailRequest:
+      type: object
+      required:
+        - email
+        - verificationLink
+        - emailTemplateId
+        - safleId
+      properties:
+        email:
+          type: string
+          format: email
+          description: email address
+          example: " "
+        verificationLink:
+          type: string
+          example: " "
+        emailTemplateId:
+          type: string
+          example: " "
+        safleId:
+          type: string
+          example: " "
+    SendEmailResponse:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          example: 200
+        message:
+          type: string
+          example: "Email sent successfully."
+
+    FieldValidationError:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          example: 400
+        type:
+          type: string
+          example: "field-validation"
+        details:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              message:
+                type: string
+          example:
+            - name: "field validation error name"
+              message: "field validation error message"
+              
+    SendOtpEmailRequest:
+      type: object
+      required:
+        - email
+        - emailTemplateId
+        - name
+        - otp
+      properties:
+        email:
+          type: string
+          format: email
+          description: The email address to send the OTP.
+          example: " "
+        emailTemplateId:
+          type: string
+          description: The template ID for the email to be sent.
+          example: " "
+        name:
+          type: string
+          description: The recipient's name to personalize the email.
+          example: " "
+        otp:
+          type: string
+          description: The OTP code to be included in the email.
+          example: " "
+
+    SendOtpEmailResponse:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          example: 200
+        message:
+          type: string
+          example: "Email sent successfully."
+          
+    SendCustomEmailRequest:
+      type: object
+      required:
+        - email
+        - emailTemplateId
+        - data
+      properties:
+        email:
+          type: string
+          format: email
+          description: The email address to send the custom email.
+          example: " "
+        emailTemplateId:
+          type: string
+          description: The template ID for the email to be sent.
+          example: " "
+        data:
+          type: object
+          description: Dynamic data to personalize the email.
+          example: 
+            {}   
+            
+    SendCustomEmailResponse:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          example: 200
+        message:
+          type: string
+          example: "Email sent successfully."

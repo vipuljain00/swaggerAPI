@@ -1,0 +1,253 @@
+openapi: 3.0.0
+
+info:
+  description: API for managing user devices.
+  version: "1.0.0"
+  title: Device Service
+  
+# servers:
+#   - url: https://dev-device.getsafle.com
+#     description: Development server
+#   - url: https://test-device.getsafle.com
+#     description: Testing server
+#   - url: https://stage-device.getsafle.com
+#     description: Staging server
+#   - url: https://b-device.getsafle.com
+#     description: Production server
+
+paths:
+  /device:
+    post:
+      summary: Save device
+      description: Save a user's device information.
+      security:
+        - bearerAuth: []
+      tags:
+        - Device
+      servers:
+        - url: https://dev-device.getsafle.com
+          description: Development server
+        - url: https://test-device.getsafle.com
+          description: Testing server
+        - url: https://stage-device.getsafle.com
+          description: Staging server
+        - url: https://b-device.getsafle.com
+          description: Production server
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SaveDeviceRequest'
+      responses:
+        '201':
+          description: User device added successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SaveDeviceResponse'
+        '400':
+          description: Field validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FieldValidationError'
+          
+    get:
+      summary: Get user devices
+      description: Fetch devices associated with a user.
+      security:
+        - bearerAuth: []
+      tags:
+        - Device
+      servers:
+        - url: https://dev-device.getsafle.com
+          description: Development server
+        - url: https://test-device.getsafle.com
+          description: Testing server
+        - url: https://stage-device.getsafle.com
+          description: Staging server
+        - url: https://b-device.getsafle.com
+          description: Production server  
+      parameters:
+        - name: deviceType
+          in: query
+          required: true
+          schema:
+            type: string
+            enum:
+            - web
+            - mobile
+            example: mobile
+          description: Filter by device type.
+      responses:
+        '200':
+          description: Successfully retrieved user devices
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetUserDevicesResponse'
+        '400':
+          description: Field validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FieldValidationError'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  
+  schemas:
+    SaveDeviceRequest:
+      type: object
+      required:
+        - isMobile
+        - os
+        - osVersion
+        - browser
+        - userAgent
+        - ipAddress
+        - deviceToken
+        - name
+      properties:
+        isMobile:
+          type: boolean
+          description: Indicates if the device is mobile.
+          example: true
+        os:
+          type: string
+          description: Operating system of the device.
+          example: "iOS"
+        osVersion:
+          type: string
+          description: Version of the operating system.
+          example: "14.5"
+        browser:
+          type: string
+          description: Browser name if applicable.
+          example: "Safari"
+        userAgent:
+          type: string
+          description: User agent string.
+          example: "Mozilla/5.0 (iPhone; CPU iPhone OS 14_5 like Mac OS X)"
+        ipAddress:
+          type: string
+          description: IP address of the device.
+          example: "192.168.0.1"
+        deviceToken:
+          type: string
+          description: Unique token for identifying the device.
+          example: "device-token-12345"
+        name:
+          type: string
+          description: User-assigned name for the device.
+          example: "John's iPhone"
+        macAddress:
+          type: string
+          description: MAC address of the device.
+          example: "00:0a:95:9d:68:16"
+        manufacturer:
+          type: string
+          description: Manufacturer of the device.
+          example: "Apple"
+        model:
+          type: string
+          description: Model of the device.
+          example: "iPhone 12"
+        systemName:
+          type: string
+          description: System name of the device.
+          example: "iOS"
+        systemVersion:
+          type: string
+          description: Version of the system.
+          example: "14.5"
+
+    SaveDeviceResponse:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          example: 201
+        message:
+          type: string
+          example: "User device added successfully."
+
+    GetUserDevicesResponse:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          example: 200
+        doc:
+          type: object
+          properties:
+            data:
+              type: array
+              items:
+                type: object
+                properties:
+                  isMobile:
+                    type: boolean
+                    example: true
+                  os:
+                    type: string
+                    example: "iOS"
+                  osVersion:
+                    type: string
+                    example: "14.5"
+                  browser:
+                    type: string
+                    example: "Safari"
+                  userAgent:
+                    type: string
+                    example: "Mozilla/5.0 (iPhone; CPU iPhone OS 14_5 like Mac OS X)"
+                  ipAddress:
+                    type: string
+                    example: "192.168.0.1"
+                  deviceToken:
+                    type: string
+                    example: "device-token-12345"
+                  name:
+                    type: string
+                    example: "John's iPhone"
+                  macAddress:
+                    type: string
+                    example: "00:0a:95:9d:68:16"
+                  manufacturer:
+                    type: string
+                    example: "Apple"
+                  model:
+                    type: string
+                    example: "iPhone 12"
+                  systemName:
+                    type: string
+                    example: "iOS"
+                  systemVersion:
+                    type: string
+                    example: "14.5"
+
+    FieldValidationError:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          example: 400
+        type:
+          type: string
+          example: "field-validation"
+        details:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+                example: "field validation error name"
+              message:
+                type: string
+                example: "field validation error message"
